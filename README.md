@@ -1,3 +1,6 @@
+## Hint
+* store data in data folder
+
 ## Set up
 * `python3 -m venv venv`
 * `source venv/bin/activate`
