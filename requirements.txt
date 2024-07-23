@@ -1,4 +1,5 @@
 ipywidgets
 matplotlib
 numpy
+opencv-python
 voila
