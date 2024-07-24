@@ -26,10 +26,13 @@ def load_widget_states(loaded_value_dic):
     for name,loaded_value in loaded_value_dic.items():
         widget_dic[name].value = loaded_value
         
-# _throwaway_ because button sends information about itself as argument
-def load(_throwaway_):
-    # Load the list of values back from the file
-    with open('data/settings.json', 'r') as file:
-        loaded_vlaue_dic = json.load(file)
-    load_widget_states(loaded_vlaue_dic)
-    
+
+def load(change):
+    # Get the uploaded file
+    uploaded_file = change['new'][0]
+    print(uploaded_file)
+    # Get the file content in byte format
+    byte_data = uploaded_file['content'].tobytes()
+    # Converts it to json
+    json_data = json.loads(byte_data.decode('utf-8'))
+    load_widget_states(json_data)    
