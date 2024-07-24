@@ -1,6 +1,7 @@
 import json
 
 widget_dic = {}
+current_loaded_settings = {}
 # Adds widget to the list of widgets which are going to be stored
 def add(new_widget, name):
     widget_dic[name] = new_widget
@@ -22,17 +23,16 @@ def save(_throwaway_):
         json.dump(values_dic, file)
 
 # Function to load widget values
-def load_widget_states(loaded_value_dic):
-    for name,loaded_value in loaded_value_dic.items():
+def load_widget_states(_throwaway_):
+    for name,loaded_value in current_loaded_settings.items():
         widget_dic[name].value = loaded_value
-        
 
 def load(change):
     # Get the uploaded file
     uploaded_file = change['new'][0]
-    print(uploaded_file)
     # Get the file content in byte format
     byte_data = uploaded_file['content'].tobytes()
     # Converts it to json
     json_data = json.loads(byte_data.decode('utf-8'))
-    load_widget_states(json_data)    
+    global current_loaded_settings
+    current_loaded_settings = json_data
