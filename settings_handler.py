@@ -3,6 +3,7 @@ from os import listdir
 from os.path import isfile, join
 # dictionary for all widgets which values are going to be tracked
 widget_dic = {}
+settings_folder = 'settings/'
 # Name of file in which the upcoming save of settings will be written
 will_save_file_name = 'name_not_given'
 will_load_file_name = None
@@ -25,7 +26,7 @@ def get_widget_values():
 def save(_throwaway_):
     # Dump the list of values to file
     values_dic = get_widget_values()
-    with open('data/'+will_save_file_name+'.json', 'w') as file:
+    with open(settings_folder + will_save_file_name+'.json', 'w') as file:
         json.dump(values_dic, file)
     # Updates options of uploader widget
     uploader_widget.options = get_all_files()
@@ -38,7 +39,7 @@ def load_widget_states(loaded_vlaue_dict):
 # Does not change widgets!!!
 def load(_throwaway_):
     # Load the list of values back from the file
-    with open('data/' + will_load_file_name, 'r') as file:
+    with open(settings_folder + will_load_file_name, 'r') as file:
         loaded_vlaue_dict = json.load(file)
     load_widget_states(loaded_vlaue_dict)
 # This function is called by text button - sets name of file to save into
@@ -50,6 +51,5 @@ def set_load_file_name(change):
     global will_load_file_name
     will_load_file_name = change['new']
 def get_all_files():
-    folder = 'data/'
-    all_files = [f for f in listdir(folder) if isfile(join(folder, f))]
+    all_files = [f for f in listdir(settings_folder) if isfile(join(settings_folder, f))]
     return all_files

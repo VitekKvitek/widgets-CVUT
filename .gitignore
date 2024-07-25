@@ -2,6 +2,8 @@
 # custom
 #
 
+# folder for storing settings presets
+settings/
 # folder for storing data
 data/
 
