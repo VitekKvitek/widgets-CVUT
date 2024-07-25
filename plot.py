@@ -1,10 +1,13 @@
 import cv2 as cv
 import numpy as np
+from os import listdir
+from os.path import isfile, join
 
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from IPython.display import display
 from IPython.display import FileLink
+
 
 def drawOverlay(opacity, original_image, original_gt):
     obstacle_clr = [255,0,0]
@@ -42,7 +45,7 @@ def drawContoure(original_image, original_gt):
     thickness = 3
     
     # Convert image to grayscale
-    imgray = cv.cvtColor(original_gt, cv.COLOR_BGR2GRAY)
+    imgray = original_gt[:,:,0]
 
     # Apply thresholding
     _, road_thresh = cv.threshold(imgray, 1, 255, 0)
@@ -57,3 +60,8 @@ def drawContoure(original_image, original_gt):
     cv.drawContours(contours_image, road_contours, -1, road_clr_con, thickness)  
     cv.drawContours(contours_image, obstacle_contours, -1, obstacle_clr_con , thickness)  
     return contours_image
+
+def get_all_files(folder_path):
+    all_files = [f for f in listdir(folder_path) if isfile(join(folder_path, f))]
+    return all_files
+
