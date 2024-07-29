@@ -5,18 +5,15 @@ from IPython.display import display, HTML
 
 # create a dictionary
 # TODO - load part
-data = {
-    "Method 1": ["18", "25", "31", "10"],
-    "Method 2": ["95", "36", "28", "33"],
-    "Method 3": ["9", "42", "72", "22"],
-    "Method 4": ["12", "69", "85", "15"],
-    "Method 5": ["50", "23", "65", "14"],
-    "Method 6": ["78", "45", "39", "20"],
-    "Method 7": ["21", "56", "47", "33"],
-    "Method 8": ["64", "32", "10", "57"],
-    "Method 9": ["80", "54", "29", "17"],
-    "Method 10": ["43", "67", "22", "11"],
-}
+data = [
+    ["18", "25", "31", "10"],
+    ["95", "36", "28", "33"],
+    ["9", "42", "72", "22"],
+    ["12", "69", "85", "15"],
+    ["50", "23", "65", "14"],
+    ["78", "45", "39", "20"]
+]
+
 # Dataframe with all of the data
 df = None
 # Dataframe version which will be displayed - after black list and sorting
@@ -87,8 +84,13 @@ def prepare_df():
     global display_df
     # create dataframe from dictionary
     df = pd.DataFrame(data)
-    df = df.transpose()
     df.columns = ['Dataset 1 (AP)', 'Dataset 1 (FPRat95)', 'Dataset 2 (AP)', 'Dataset 2 (FPRat95)']
+    df.index = ["Method 1",
+                "Method 2",
+                "Method 3",
+                "Method 4",
+                "Method 5",
+                "Method 6",]
     # Extract AP and FPRat95 columns
     ap_columns = [col for col in df.columns if 'AP' in col]
     fprat95_columns = [col for col in df.columns if 'FPRat95' in col]
