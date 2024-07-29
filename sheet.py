@@ -24,23 +24,28 @@ display_df = None
 # Out widget that displays sheet (table)
 out = widgets.Output()
 
-# Remembers the state of ascending AP and FPRat95
-ascend_AP = True
-ascend_FPRat95 = True
-
+# Stores the state of ascending AP and FPRat95
+ascend_AP = False
+ascend_FPRat95 = False
+# Stores the column by which it should be ordered
+average_type = 'Average AP'
 # Sorts the table based on selected criteria
-def sort_by_average(df, average_type):
+def sort_by_average(df, called_by_button = False):
     global ascend_AP
     global ascend_FPRat95
+    global average_type
     # Determine the column to sort by
+    
     if average_type == 'AP':
+        if called_by_button:
+            ascend_AP = not ascend_AP
         average_column = 'Average AP'
         ascend = ascend_AP
-        ascend_AP = not ascend_AP
     else:
+        if called_by_button:
+            ascend_FPRat95 = not ascend_FPRat95
         average_column = 'Average FPRat95'
         ascend = ascend_FPRat95
-        ascend_FPRat95 = not ascend_FPRat95
     
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
@@ -48,9 +53,11 @@ def sort_by_average(df, average_type):
 # This function is called after clicking a sort button
 def sort_button_on_click(button):
     global display_df
+    global average_type
     # It gets score type from the description of button
     score_type = button.description.split()[-1]
-    display_df = sort_by_average(display_df, score_type)
+    average_type = score_type
+    display_df = sort_by_average(display_df, called_by_button=True)
     update_sheet()
 # Function that is called after toggle button clicked
 def on_button_toggle(change):
@@ -67,6 +74,7 @@ def on_button_toggle(change):
     else:
         button.button_style = 'success'
         display_df.loc[button_description] = df.loc[button_description]
+        display_df = sort_by_average(display_df)
     update_sheet()
 # Functin which updates the showed (displayed) table
 def update_sheet():
@@ -89,8 +97,6 @@ def prepare_df():
     # Calculate the average for AP and FPRat95
     df['Average AP'] = df[ap_columns].mean(axis=1)
     df['Average FPRat95'] = df[fprat95_columns].mean(axis=1)
-    # stores the data in both dataframes
-    df = sort_by_average(df, 'AP')
     # Copys the values of dataframe 
     display_df = df.copy()
 # Function for preparing toggle buttons (blacklist) based on the amount of methods in it
