@@ -46,6 +46,7 @@ def sort_button_on_click(button):
     score_type = button.description.split()[-1]
     display_df = sort_by_average(display_df, score_type)
     update_sheet()
+# Function that is called after toggle button clicked
 def on_button_toggle(change):
     global display_df
     global df
