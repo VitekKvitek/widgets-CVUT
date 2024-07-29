@@ -1,0 +1,1 @@
+# Script fpr loading results data
