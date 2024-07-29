@@ -85,6 +85,7 @@ def prepare_df():
     df['Average FPRat95'] = df[fprat95_columns].mean(axis=1)
     # stores the data in both dataframes
     df = sort_by_average(df, 'AP')
+    # Copys the values of dataframe 
     display_df = df.copy()
 # Function for preparing toggle buttons (blacklist) based on the amount of methods in it
 def prepare_toggle_buttons():
