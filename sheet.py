@@ -50,11 +50,16 @@ def sort_button_on_click(button):
 def on_button_toggle(change):
     global display_df
     global df
+    # Gets the boolean state from the change dict
     toggled = change['new']
-    button_description = change['owner'].description
+    # Gets the button from the change dict
+    button = change['owner']
+    button_description = button.description
     if toggled:
+        button.button_style = 'danger'
         display_df = display_df.drop(button_description)
     else:
+        button.button_style = 'success'
         display_df.loc[button_description] = df.loc[button_description]
     update_sheet()
 # Functin which updates the showed (displayed) table
