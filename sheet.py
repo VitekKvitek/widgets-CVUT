@@ -11,51 +11,60 @@ data = {
     "Method 3": ["9", "42", "72", "22"],
     "Method 4": ["12", "69", "85", "15"],
 }
+# Dataframe with all of the data
 df = None
-after_black_list_df = None
+# Dataframe version which will be displayed - after black list and sorting
+display_df = None
+# Out widget that displays sheet (table)
 out = widgets.Output()
 
-def sort_by_best_average(df, average_type):
-    # Ensure the average_type is valid
-    if average_type not in ['AP', 'FPRat95']:
-        raise ValueError("average_type must be either 'AP' or 'FPRat95'")
-    
+# Remembers the state of ascending AP and FPRat95
+ascend_AP = True
+ascend_FPRat95 = True
+
+# Sorts the table based on selected criteria
+def sort_by_average(df, average_type):
+    global ascend_AP
+    global ascend_FPRat95
     # Determine the column to sort by
     if average_type == 'AP':
         average_column = 'Average AP'
+        ascend = ascend_AP
+        ascend_AP = not ascend_AP
     else:
         average_column = 'Average FPRat95'
+        ascend = ascend_FPRat95
+        ascend_FPRat95 = not ascend_FPRat95
     
-    # Sort the DataFrame by the selected average column in descending order
-    sorted_df = df.sort_values(by=average_column, ascending=False)
-    
+    # Sort the DataFrame by the selected average column and selected ascending
+    sorted_df = df.sort_values(by=average_column, ascending=ascend)
     return sorted_df
-
-
+# This function is called after clicking a sort button
 def sort_button_on_click(button):
-    global after_black_list_df
+    global display_df
+    # It gets score type from the description of button
     score_type = button.description.split()[-1]
-    after_black_list_df = sort_by_best_average(after_black_list_df, score_type)
-    update_sheet()    
-
+    display_df = sort_by_average(display_df, score_type)
+    update_sheet()
 def on_button_toggle(change):
-    global after_black_list_df
+    global display_df
     global df
     toggled = change['new']
     button_description = change['owner'].description
     if toggled:
-        after_black_list_df = after_black_list_df.drop(button_description)
+        display_df = display_df.drop(button_description)
     else:
-        after_black_list_df.loc[button_description] = df.loc[button_description]
+        display_df.loc[button_description] = df.loc[button_description]
     update_sheet()
+# Functin which updates the showed (displayed) table
 def update_sheet():
     with out:
         out.clear_output()
-        display(HTML(after_black_list_df.to_html()))
-        
+        display(HTML(display_df.to_html()))
+# Initial prepare of dataframe
 def prepare_df():
     global df
-    global after_black_list_df
+    global display_df
     # create dataframe from dictionary
     df = pd.DataFrame(data)
     df = df.transpose()
@@ -69,8 +78,9 @@ def prepare_df():
     df['Average AP'] = df[ap_columns].mean(axis=1)
     df['Average FPRat95'] = df[fprat95_columns].mean(axis=1)
     # stores the data in both dataframes
-    df = sort_by_best_average(df, 'AP')
-    after_black_list_df = df.copy()
+    df = sort_by_average(df, 'AP')
+    display_df = df.copy()
+# Function for preparing toggle buttons (blacklist) based on the amount of methods in it
 def prepare_toggle_buttons():
     all_mehtods = df.index.tolist()
     black_list = []
@@ -86,12 +96,14 @@ def prepare_toggle_buttons():
         new_toggle_button.observe(on_button_toggle, names='value')
         black_list.append(new_toggle_button)
     return black_list
+# Prepares sort button
 def prepare_sort_buttons():
     button_AP = widgets.Button(description="Sort by AP")
     button_AP.on_click(sort_button_on_click)
     button_FPRat95 = widgets.Button(description="Sort by FPRat95")
     button_FPRat95.on_click(sort_button_on_click)
     return button_AP, button_FPRat95
+# Function to display everything
 def initial_display():
     prepare_df()
     button_AP, button_FPRat95 = prepare_sort_buttons()
@@ -99,5 +111,5 @@ def initial_display():
     for button in prepare_toggle_buttons():
        display(button)
     with out:
-        display(HTML(after_black_list_df.to_html()))
+        display(HTML(display_df.to_html()))
     display(out)
