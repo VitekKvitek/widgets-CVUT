@@ -90,7 +90,7 @@ def prepare_df():
 # Function for preparing toggle buttons (blacklist) based on the amount of methods in it
 def prepare_toggle_buttons():
     all_mehtods = df.index.tolist()
-    black_list = []
+    black_list_buttons = []
     for method in all_mehtods:
         new_toggle_button = widgets.ToggleButton(
                                 value=False,
@@ -101,8 +101,10 @@ def prepare_toggle_buttons():
                                 icon='check' # (FontAwesome names without the `fa-` prefix)
                             )
         new_toggle_button.observe(on_button_toggle, names='value')
-        black_list.append(new_toggle_button)
-    return black_list
+        black_list_buttons.append(new_toggle_button)
+    # adds the buttons to the HBox so they shopup horizontally
+    hbox = widgets.HBox(black_list_buttons)
+    return hbox
 # Prepares sort button
 def prepare_sort_buttons():
     button_AP = widgets.Button(description="Sort by AP")
@@ -115,8 +117,7 @@ def initial_display():
     prepare_df()
     button_AP, button_FPRat95 = prepare_sort_buttons()
     display(button_AP,button_FPRat95)
-    for button in prepare_toggle_buttons():
-       display(button)
     with out:
         display(HTML(display_df.to_html()))
     display(out)
+    display(prepare_toggle_buttons())
