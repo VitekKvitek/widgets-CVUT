@@ -1,3 +1,6 @@
+#
+# WARNING - AP and FPRat95 are hardcoded
+#
 import ipywidgets as widgets
 from IPython.display import display
 import pandas as pd
@@ -11,8 +14,7 @@ indexes,col_names,data = read_all_jsons()
 
 
 # Dataframe with all of the data
-df = None
-# Dataframe version which will be displayed - after black list and sorting
+df = None# Dataframe version which will be displayed - after black list and sorting
 display_df = None
 # Out widget that displays sheet (table)
 out = widgets.Output()
@@ -23,6 +25,23 @@ ascend_FPRat95 = False
 # Stores the column by which it should be ordered
 average_type = 'Average AP'
 # Sorts the table based on selected criteria
+def calculate_mean_average():
+    global display_df
+    ap_columns = display_df.xs('AP', level=1, axis=1)
+    # Get rid of old average
+    ap_columns = ap_columns.drop('Average', axis=1)
+    # Extract FPRat95
+    fprat95_columns = display_df.xs('FPRat95', level=1, axis=1)
+    # Get rid of old average
+    fprat95_columns = fprat95_columns.drop('Average', axis=1)
+    # Calculate the row-wise mean of the 'AP' subcolumns
+    ap_mean = ap_columns.mean(axis=1)
+    # Calculate the row-wise mean of the 'FPRat95' subcolumns
+    fprat95_mean = fprat95_columns.mean(axis=1)
+    # Add the calculated mean as a new column to the original DataFrame
+    # BUG caluclates with already avrage values
+    display_df[('Average', 'AP')] = ap_mean
+    display_df[('Average', 'FPRat95')] = fprat95_mean
 def sort_by_average(df, called_by_button = False):
     global ascend_AP
     global ascend_FPRat95
@@ -52,8 +71,8 @@ def sort_button_on_click(button):
     average_type = score_type
     display_df = sort_by_average(display_df, called_by_button=True)
     update_sheet()
-# Function that is called after toggle button clicked
-def on_button_toggle(change):
+# Function that is called after toggle method button clicked
+def on_button_toggle_m_bl(change):
     global display_df
     global df
     # Gets the boolean state from the change dict
@@ -67,10 +86,31 @@ def on_button_toggle(change):
     else:
         button.button_style = 'success'
         display_df.loc[button_description] = df.loc[button_description]
-        display_df = sort_by_average(display_df)
+    update_sheet()
+# Function that is called after toggle dataset button clicked
+def on_button_toggle_ds_bl(change):
+    global display_df
+    global df
+    # Gets the boolean state from the change dict
+    toggled = change['new']
+    # Gets the button from the change dict
+    button = change['owner']
+    button_description = button.description
+    if toggled:
+        button.button_style = 'warning'
+        display_df = display_df.drop((button_description,'AP'), axis=1)
+        display_df = display_df = display_df.drop((button_description, 'FPRat95'), axis=1)
+        calculate_mean_average()
+    else:
+        button.button_style = 'info'
+        display_df[(button_description, 'AP')] = df[(button_description, 'AP')]
+        display_df[(button_description, 'FPRat95')] = df[(button_description, 'FPRat95')]
+        calculate_mean_average()
     update_sheet()
 # Functin which updates the showed (displayed) table
 def update_sheet():
+    global display_df
+    display_df = sort_by_average(display_df)
     with out:
         out.clear_output()
         display(HTML(display_df.to_html()))
@@ -111,11 +151,12 @@ def prepare_df():
     df[('Average', 'AP')] = ap_mean
     df[('Average', 'FPRat95')] = fprat95_mean
     display_df = df.copy()
-    #BUG
+    # BUG
+    # Apply the styling function
     #style_display_sheet()
-# Function for preparing toggle buttons (blacklist) based on the amount of methods in it
-def prepare_toggle_buttons():
-    all_mehtods = df.index.tolist()
+# Function for preparing toggle buttons (blacklist) for methods
+def prepare_method_black_list():
+    all_mehtods = indexes
     black_list_buttons = []
     for method in all_mehtods:
         new_toggle_button = widgets.ToggleButton(
@@ -126,7 +167,25 @@ def prepare_toggle_buttons():
                                 tooltip='Description',
                                 icon='check' # (FontAwesome names without the `fa-` prefix)
                             )
-        new_toggle_button.observe(on_button_toggle, names='value')
+        new_toggle_button.observe(on_button_toggle_m_bl, names='value')
+        black_list_buttons.append(new_toggle_button)
+    # adds the buttons to the HBox so they shopup horizontally
+    hbox = widgets.HBox(black_list_buttons)
+    return hbox
+# Function for preparing toggle buttons (blacklist) for datasets
+def prepare_dataset_black_list():
+    all_datasets = col_names
+    black_list_buttons = []
+    for dataset in all_datasets:
+        new_toggle_button = widgets.ToggleButton(
+                                value=False,
+                                description= dataset,
+                                disabled=False,
+                                button_style='info', # 'success', 'info', 'warning', 'danger' or ''
+                                tooltip='Description',
+                                icon='check' # (FontAwesome names without the `fa-` prefix)
+                            )
+        new_toggle_button.observe(on_button_toggle_ds_bl, names='value')
         black_list_buttons.append(new_toggle_button)
     # adds the buttons to the HBox so they shopup horizontally
     hbox = widgets.HBox(black_list_buttons)
@@ -146,17 +205,8 @@ def initial_display():
     with out:
         display(HTML(display_df.to_html()))
     display(out)
-    display(prepare_toggle_buttons())
+    display(prepare_method_black_list())
+    display(prepare_dataset_black_list())
 def style_display_sheet():
     global display_df
-    # Define the styles to center the main column names
-    styles = {
-    ('RA', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
-    ('FS', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
-    ('RO21A', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
-    ('RO', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
-    ('Average', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
-    }
-
-    # Apply the styles and display the DataFrame
-    display_df = df.style.set_table_styles(styles, axis=1)
+    display_df = display_df.style.background_gradient(low=0.25,high=1)
