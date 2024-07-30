@@ -2,17 +2,13 @@ import ipywidgets as widgets
 from IPython.display import display
 import pandas as pd
 from IPython.display import display, HTML
-
+# Custom scripts
+from results_loader import read_all_jsons
 # create a dictionary
 # TODO - load part
-data = [
-    ["18", "25", "31", "10"],
-    ["95", "36", "28", "33"],
-    ["9", "42", "72", "22"],
-    ["12", "69", "85", "15"],
-    ["50", "23", "65", "14"],
-    ["78", "45", "39", "20"]
-]
+
+indexes,col_names,data = read_all_jsons()
+
 
 # Dataframe with all of the data
 df = None
@@ -84,21 +80,34 @@ def prepare_df():
     global display_df
     # create dataframe from dictionary
     df = pd.DataFrame(data)
-    df.columns = ['Dataset 1 (AP)', 'Dataset 1 (FPRat95)', 'Dataset 2 (AP)', 'Dataset 2 (FPRat95)']
-    df.index = ["Method 1",
-                "Method 2",
-                "Method 3",
-                "Method 4",
-                "Method 5",
-                "Method 6",]
+    # Calculates from data length of 1 row
+    length_of_1_row = len(data[0])
+    # TODO? - hardcoded
+    score_types = ['AP', 'FPRat95']
+    # Calculates how many score types is there
+    score_types_count = len(score_types)
+    # Creates sub column based on the length of the row
+    sub_col= score_types * (length_of_1_row//score_types_count)
+    # ['A','B'] -> ['A','A','B','B'] "multiplies" each element by score_count_type
+    # --> To support multiple index
+    col = [element for element in col_names for _ in range(score_types_count)]
+    # Sets multipleindex columns to the df
+    # Example:
+    # | full name    |
+    # |name |surname |
+    # |Borek|Stavitel|
+    df.columns = pd.MultiIndex.from_arrays([col,sub_col])
+    # Sets the indexes
+    df.index = indexes
+    #TODO
     # Extract AP and FPRat95 columns
     ap_columns = [col for col in df.columns if 'AP' in col]
     fprat95_columns = [col for col in df.columns if 'FPRat95' in col]
-
+    #print(ap_columns)
     df = df.apply(pd.to_numeric)
     # Calculate the average for AP and FPRat95
-    df['Average AP'] = df[ap_columns].mean(axis=1)
-    df['Average FPRat95'] = df[fprat95_columns].mean(axis=1)
+    #df['Average AP'] = df[ap_columns].mean(axis=1)
+    #df['Average FPRat95'] = df[fprat95_columns].mean(axis=1)
     # Copys the values of dataframe 
     display_df = df.copy()
 # Function for preparing toggle buttons (blacklist) based on the amount of methods in it
