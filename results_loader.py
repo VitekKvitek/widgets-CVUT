@@ -23,7 +23,8 @@ def read_all_jsons():
         dataset_folders = os.listdir(m_folder_path)
         # TODO list vsech tech value, pujde to na jeden radek
         for dataset_f in dataset_folders:
-            dataset_list.append(dataset_f)
+            if dataset_f not in dataset_list:
+                dataset_list.append(dataset_f)
             json_r_path = os.path.join(m_folder_path, dataset_f, json_general_path)
             value_AP, value_FPRat95 = read_json(json_r_path)
             solo_score_list.append(value_AP)
