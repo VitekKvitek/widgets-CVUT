@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
-from os import listdir
-from os.path import isfile, join
+from os import listdir, path
+from os.path import isfile, isdir, join
 
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
@@ -78,4 +78,9 @@ def drawContours(original_image, original_gt, dataset):
 def get_all_files(folder_path):
     all_files = [f for f in listdir(folder_path) if isfile(join(folder_path, f))]
     return all_files
+
+def get_all_folders(directory):
+    # Return only directories, not files
+    return [name for name in listdir(directory) if path.isdir(path.join(directory, name))]
+
 
