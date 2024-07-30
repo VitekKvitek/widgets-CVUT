@@ -62,6 +62,9 @@ def sort_by_average(df, called_by_button = False):
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
     return sorted_df
+def sort_by_column_order():
+    correct_order = col_names
+    correct_order.append('Average')
 # This function is called after clicking a sort button
 def sort_button_on_click(button):
     global display_df
