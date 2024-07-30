@@ -32,12 +32,12 @@ def sort_by_average(df, called_by_button = False):
     if average_type == 'AP':
         if called_by_button:
             ascend_AP = not ascend_AP
-        average_column = 'Average AP'
+        average_column = [('Average', 'AP')]
         ascend = ascend_AP
     else:
         if called_by_button:
             ascend_FPRat95 = not ascend_FPRat95
-        average_column = 'Average FPRat95'
+        average_column = [('Average', 'FPRat95')]
         ascend = ascend_FPRat95
     
     # Sort the DataFrame by the selected average column and selected ascending
@@ -99,17 +99,20 @@ def prepare_df():
     df.columns = pd.MultiIndex.from_arrays([col,sub_col])
     # Sets the indexes
     df.index = indexes
-    #TODO
-    # Extract AP and FPRat95 columns
-    ap_columns = [col for col in df.columns if 'AP' in col]
-    fprat95_columns = [col for col in df.columns if 'FPRat95' in col]
-    #print(ap_columns)
-    df = df.apply(pd.to_numeric)
-    # Calculate the average for AP and FPRat95
-    #df['Average AP'] = df[ap_columns].mean(axis=1)
-    #df['Average FPRat95'] = df[fprat95_columns].mean(axis=1)
-    # Copys the values of dataframe 
+    # Extract AP
+    ap_columns = df.xs('AP', level=1, axis=1)
+    # Extract FPRat95
+    fprat95_columns = df.xs('FPRat95', level=1, axis=1)
+    # Calculate the row-wise mean of the 'AP' subcolumns
+    ap_mean = ap_columns.mean(axis=1)
+    # Calculate the row-wise mean of the 'FPRat95' subcolumns
+    fprat95_mean = fprat95_columns.mean(axis=1)
+    # Add the calculated mean as a new column to the original DataFrame
+    df[('Average', 'AP')] = ap_mean
+    df[('Average', 'FPRat95')] = fprat95_mean
     display_df = df.copy()
+    #BUG
+    #style_display_sheet()
 # Function for preparing toggle buttons (blacklist) based on the amount of methods in it
 def prepare_toggle_buttons():
     all_mehtods = df.index.tolist()
@@ -144,3 +147,16 @@ def initial_display():
         display(HTML(display_df.to_html()))
     display(out)
     display(prepare_toggle_buttons())
+def style_display_sheet():
+    global display_df
+    # Define the styles to center the main column names
+    styles = {
+    ('RA', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
+    ('FS', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
+    ('RO21A', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
+    ('RO', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
+    ('Average', ''): [{'selector': 'th', 'props': [('text-align', 'center')]}],
+    }
+
+    # Apply the styles and display the DataFrame
+    display_df = df.style.set_table_styles(styles, axis=1)
