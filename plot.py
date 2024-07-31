@@ -6,7 +6,7 @@ from os.path import isfile, join
 
 
 def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
-    print(threshold)
+    #print(threshold)
     obstacle_clr = [255,0,0]  # Red obstacles
     road_clr = [128,64,128]   # Purple road
 
@@ -17,8 +17,8 @@ def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
         road_mask = (original_gt == 1)
         obstacle_mask = (original_gt == 0)
     else:
-        road_mask = (original_gt <= threshold)  # Assuming road values are 0.5 or higher
-        obstacle_mask = (original_gt > threshold)  # Assuming obstacle values are less than 0.5 
+        road_mask = (original_gt <= threshold[0])  
+        obstacle_mask = (original_gt > threshold[1]) 
 
     # Create overlays
     road_overlay = np.zeros_like(original_image)
@@ -41,7 +41,7 @@ def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
         combined_image = cv.addWeighted(combined_mask, opacity, original_image, 1, 0)
     else:
         inverted_mask = np.where(combined_mask == 0, 1, 0).astype(np.uint8)
-        combined_image = cv.add(combined_mask, inverted_mask * original_image)
+        combined_image = cv.add(combined_mask, (inverted_mask * original_image))
     
     return combined_image
 
@@ -58,8 +58,8 @@ def drawContours(original_image, original_gt, dataset, threshold):
         _, obstacle_thresh = cv.threshold(imgray, 0, 255, 0)
     else:
         # Convert normalized ground truth to binary images
-        road_thresh = (original_gt >= threshold).astype(np.uint8) * 255  # Threshold for roads
-        obstacle_thresh = (original_gt < threshold).astype(np.uint8) * 255  # Threshold for obstacles
+        road_thresh = (original_gt >= threshold[0]).astype(np.uint8) * 255  # Threshold for roads
+        obstacle_thresh = (original_gt < threshold[1]).astype(np.uint8) * 255  # Threshold for obstacles
 
     # Find contours
     road_contours, _ = cv.findContours(road_thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
@@ -123,6 +123,7 @@ def load_images(selected_file, use_dataset, selected_folder, selected_model):
     # Convert BGR to RGB format
     original_image_rgb = original_image[:, :, [2, 1, 0]]
     return original_image_rgb, original_gt
+
 
 
 
