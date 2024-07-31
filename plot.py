@@ -5,9 +5,10 @@ from os import listdir, path
 from os.path import isfile, join
 
 
-def drawOverlay(opacity, original_image, original_gt, dataset):
-    obstacle_clr = [255,0,0]  # Red for obstacles
-    road_clr = [128,64,128]   # Purple for road
+def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
+    print(threshold)
+    obstacle_clr = [255,0,0]  # Red obstacles
+    road_clr = [128,64,128]   # Purple road
 
     assert original_image.shape[:2] == original_gt.shape[:2], "Images must have the same dimensions"
 
@@ -16,8 +17,8 @@ def drawOverlay(opacity, original_image, original_gt, dataset):
         road_mask = (original_gt == 1)
         obstacle_mask = (original_gt == 0)
     else:
-        road_mask = (original_gt <= 0.5)  # Assuming road values are 0.5 or higher
-        obstacle_mask = (original_gt > 0.5)  # Assuming obstacle values are less than 0.5
+        road_mask = (original_gt <= threshold)  # Assuming road values are 0.5 or higher
+        obstacle_mask = (original_gt > threshold)  # Assuming obstacle values are less than 0.5 
 
     # Create overlays
     road_overlay = np.zeros_like(original_image)
@@ -44,7 +45,7 @@ def drawOverlay(opacity, original_image, original_gt, dataset):
     
     return combined_image
 
-def drawContours(original_image, original_gt, dataset):
+def drawContours(original_image, original_gt, dataset, threshold):
     road_clr_con = (0,255,0)   # Green for road contours
     obstacle_clr_con = (255,0,0)  # Red for obstacle contours
     thickness = 3
@@ -57,8 +58,8 @@ def drawContours(original_image, original_gt, dataset):
         _, obstacle_thresh = cv.threshold(imgray, 0, 255, 0)
     else:
         # Convert normalized ground truth to binary images
-        road_thresh = (original_gt >= 0.5).astype(np.uint8) * 255  # Threshold for roads
-        obstacle_thresh = (original_gt < 0.5).astype(np.uint8) * 255  # Threshold for obstacles
+        road_thresh = (original_gt >= threshold).astype(np.uint8) * 255  # Threshold for roads
+        obstacle_thresh = (original_gt < threshold).astype(np.uint8) * 255  # Threshold for obstacles
 
     # Find contours
     road_contours, _ = cv.findContours(road_thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
@@ -95,7 +96,6 @@ def contract(name):
         case _:
             print("Could not find correct contraction name")
             contraction = None
-
     return contraction
 
 def load_images(selected_file, use_dataset, selected_folder, selected_model):
@@ -106,10 +106,8 @@ def load_images(selected_file, use_dataset, selected_folder, selected_model):
         original_gt_path = os.path.join(gt_folder_path, selected_file)
     else:
         results_folder = os.path.join('data/export/results/', selected_model, contract(selected_folder), 'preds')
-        print(results_folder)
         base_filename = os.path.splitext(selected_file)[0]
-        original_gt_path = os.path.join(results_folder, base_filename+"..png.npy")
-    print(original_gt_path)
+        original_gt_path = os.path.join(results_folder, f"{base_filename}..png.npy")
 
     # Load ground truth
     original_gt = cv.imread(original_gt_path) if use_dataset else np.load(original_gt_path)
