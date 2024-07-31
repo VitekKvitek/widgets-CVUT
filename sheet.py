@@ -86,8 +86,8 @@ def sort_button_on_click(button):
     average_type = score_type
     display_df = sort_by_average(display_df, called_by_button=True)
     update_sheet()
-# Function that is called after toggle method button clicked
-def on_button_toggle_m_bl(change):
+# Function that is called after toggle algo button clicked
+def on_button_toggle_alg_bl(change):
     # Gets the boolean state from the change dict
     toggled = change['new']
     # Gets the button from the change dict
@@ -171,20 +171,20 @@ def prepare_df():
     # BUG
     # Apply the styling function
     #style_display_sheet()
-# Function for preparing toggle buttons (blacklist) for methods
-def prepare_method_black_list():
-    all_mehtods = indexes
+# Function for preparing toggle buttons (blacklist) for algos
+def prepare_algo_black_list():
+    all_algos = indexes
     black_list_buttons = []
-    for method in all_mehtods:
+    for algo in all_algos:
         new_toggle_button = widgets.ToggleButton(
                                 value=False,
-                                description= method,
+                                description= algo,
                                 disabled=False,
                                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
                                 tooltip='Description',
                                 icon='check' # (FontAwesome names without the `fa-` prefix)
                             )
-        new_toggle_button.observe(on_button_toggle_m_bl, names='value')
+        new_toggle_button.observe(on_button_toggle_alg_bl, names='value')
         black_list_buttons.append(new_toggle_button)
     # adds the buttons to the HBox so they shopup horizontally
     hbox = widgets.HBox(black_list_buttons)
@@ -222,8 +222,10 @@ def initial_display():
     with out:
         display(HTML(display_df.to_html()))
     display(out)
-    display(prepare_method_black_list())
+    display(prepare_algo_black_list())
     display(prepare_dataset_black_list())
 def style_display_sheet():
     global display_df
     display_df = display_df.style.background_gradient(low=0.25,high=1)
+def get_all_displayed_algos():
+    return display_df.index
