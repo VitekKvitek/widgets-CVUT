@@ -16,6 +16,10 @@ indexes,col_names,data = read_all_jsons()
 # Dataframe with all of the data
 df = None# Dataframe version which will be displayed - after black list and sorting
 display_df = None
+# Black list for columns
+bl_col = []
+# Black list for rows
+bl_row = []
 # Out widget that displays sheet (table)
 out = widgets.Output()
 
@@ -23,7 +27,7 @@ out = widgets.Output()
 ascend_AP = False
 ascend_FPRat95 = False
 # Stores the column by which it should be ordered
-average_type = 'Average AP'
+average_type = 'AP'
 # Sorts the table based on selected criteria
 def calculate_mean_average():
     global display_df
@@ -62,6 +66,15 @@ def sort_by_average(df, called_by_button = False):
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
     return sorted_df
+# TODO
+def drop_blackllisted():
+    global display_df
+    display_df = df.copy()
+    for row in bl_row:
+        display_df = display_df.drop(row)
+    for col in bl_col:
+        display_df = display_df.drop((col,'AP'), axis=1)
+        display_df = display_df.drop((col,'FPRat95'), axis=1)
 def sort_by_column_order():
     correct_order = col_names
     correct_order.append('Average')
@@ -76,8 +89,6 @@ def sort_button_on_click(button):
     update_sheet()
 # Function that is called after toggle method button clicked
 def on_button_toggle_m_bl(change):
-    global display_df
-    global df
     # Gets the boolean state from the change dict
     toggled = change['new']
     # Gets the button from the change dict
@@ -85,10 +96,12 @@ def on_button_toggle_m_bl(change):
     button_description = button.description
     if toggled:
         button.button_style = 'danger'
-        display_df = display_df.drop(button_description)
+        bl_row.append(button_description)
+        #display_df = display_df.drop(button_description)
     else:
         button.button_style = 'success'
-        display_df.loc[button_description] = df.loc[button_description]
+        bl_row.remove(button_description)
+        #display_df.loc[button_description] = df.loc[button_description]
     update_sheet()
 # Function that is called after toggle dataset button clicked
 def on_button_toggle_ds_bl(change):
@@ -101,18 +114,22 @@ def on_button_toggle_ds_bl(change):
     button_description = button.description
     if toggled:
         button.button_style = 'warning'
-        display_df = display_df.drop((button_description,'AP'), axis=1)
-        display_df = display_df = display_df.drop((button_description, 'FPRat95'), axis=1)
-        calculate_mean_average()
+        bl_col.append(button_description)
+        # display_df = display_df.drop((button_description,'AP'), axis=1)
+        # display_df = display_df = display_df.drop((button_description, 'FPRat95'), axis=1)
+        # calculate_mean_average()
     else:
         button.button_style = 'info'
-        display_df[(button_description, 'AP')] = df[(button_description, 'AP')]
-        display_df[(button_description, 'FPRat95')] = df[(button_description, 'FPRat95')]
-        calculate_mean_average()
+        bl_col.remove(button_description)
+        # display_df[(button_description, 'AP')] = df[(button_description, 'AP')]
+        # display_df[(button_description, 'FPRat95')] = df[(button_description, 'FPRat95')]
+        # calculate_mean_average()
     update_sheet()
 # Functin which updates the showed (displayed) table
 def update_sheet():
     global display_df
+    drop_blackllisted()
+    calculate_mean_average()
     display_df = sort_by_average(display_df)
     with out:
         out.clear_output()
