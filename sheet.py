@@ -43,7 +43,6 @@ def calculate_mean_average():
     # Calculate the row-wise mean of the 'FPRat95' subcolumns
     fprat95_mean = fprat95_columns.mean(axis=1)
     # Add the calculated mean as a new column to the original DataFrame
-    # BUG caluclates with already avrage values
     display_df[('Average', 'AP')] = ap_mean
     display_df[('Average', 'FPRat95')] = fprat95_mean
 def sort_by_average(df, called_by_button = False):
@@ -66,18 +65,18 @@ def sort_by_average(df, called_by_button = False):
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
     return sorted_df
-# TODO
+# This function copies the original df and removes all blacklisted rows and columns
 def drop_blackllisted():
     global display_df
+    # Gets original df
     display_df = df.copy()
+    # Cycle which drops rows
     for row in bl_row:
         display_df = display_df.drop(row)
+    # Cycle which drops columns
     for col in bl_col:
         display_df = display_df.drop((col,'AP'), axis=1)
         display_df = display_df.drop((col,'FPRat95'), axis=1)
-def sort_by_column_order():
-    correct_order = col_names
-    correct_order.append('Average')
 # This function is called after clicking a sort button
 def sort_button_on_click(button):
     global display_df
@@ -94,14 +93,14 @@ def on_button_toggle_m_bl(change):
     # Gets the button from the change dict
     button = change['owner']
     button_description = button.description
+    # Blacklist scenario
     if toggled:
         button.button_style = 'danger'
         bl_row.append(button_description)
-        #display_df = display_df.drop(button_description)
+    # Whitelist scenario
     else:
         button.button_style = 'success'
         bl_row.remove(button_description)
-        #display_df.loc[button_description] = df.loc[button_description]
     update_sheet()
 # Function that is called after toggle dataset button clicked
 def on_button_toggle_ds_bl(change):
@@ -112,18 +111,16 @@ def on_button_toggle_ds_bl(change):
     # Gets the button from the change dict
     button = change['owner']
     button_description = button.description
+    # Blacklist scenario
     if toggled:
         button.button_style = 'warning'
+        # Adds clicked on dataset to blacklist
         bl_col.append(button_description)
-        # display_df = display_df.drop((button_description,'AP'), axis=1)
-        # display_df = display_df = display_df.drop((button_description, 'FPRat95'), axis=1)
-        # calculate_mean_average()
+    # Whitelist scenario
     else:
         button.button_style = 'info'
+        # Removes clicked on dataset from black list
         bl_col.remove(button_description)
-        # display_df[(button_description, 'AP')] = df[(button_description, 'AP')]
-        # display_df[(button_description, 'FPRat95')] = df[(button_description, 'FPRat95')]
-        # calculate_mean_average()
     update_sheet()
 # Functin which updates the showed (displayed) table
 def update_sheet():
