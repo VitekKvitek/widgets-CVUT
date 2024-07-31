@@ -6,11 +6,11 @@ from IPython.display import display
 import pandas as pd
 from IPython.display import display, HTML
 # Custom scripts
-from results_loader import read_all_jsons
+from results_loader import read_all_algo_jsons
 # create a dictionary
 # TODO - load part
 
-indexes,col_names,data = read_all_jsons()
+indexes,col_names,data = read_all_algo_jsons()
 
 
 # Dataframe with all of the data
