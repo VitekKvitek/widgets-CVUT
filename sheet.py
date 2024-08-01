@@ -2,7 +2,6 @@
 # WARNING - AP and FPRat95 are hardcoded
 #
 import ipywidgets as widgets
-from IPython.display import display
 import pandas as pd
 from IPython.display import display, HTML
 # Custom scripts
