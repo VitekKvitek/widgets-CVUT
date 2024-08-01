@@ -6,6 +6,7 @@ import pandas as pd
 from IPython.display import display, HTML
 # Custom scripts
 from results_loader import read_all_algo_jsons
+import results_comparer
 # create a dictionary
 # TODO - load part
 
@@ -100,6 +101,7 @@ def on_button_toggle_alg_bl(change):
     else:
         button.button_style = 'success'
         bl_row.remove(button_description)
+    export_sheet_row_index_to_comparer()
     update_sheet()
 # Function that is called after toggle dataset button clicked
 def on_button_toggle_ds_bl(change):
@@ -223,8 +225,18 @@ def initial_display():
     display(out)
     display(prepare_algo_black_list())
     display(prepare_dataset_black_list())
+    export_sheet_row_index_to_comparer()
+    export_sheet_column_index_to_compare()
 def style_display_sheet():
     global display_df
     display_df = display_df.style.background_gradient(low=0.25,high=1)
 def get_all_displayed_algos():
     return display_df.index
+def export_sheet_row_index_to_comparer():
+    algo_list = df.index
+    algo_list = [item for item in algo_list if item not in bl_row]
+    results_comparer.import_sheet_row_index(algo_list)
+    # TODO
+def export_sheet_column_index_to_compare():
+    
+    dataset_list = display_df.columns

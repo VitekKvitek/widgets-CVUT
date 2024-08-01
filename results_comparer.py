@@ -2,7 +2,6 @@
 import ipywidgets as widgets
 from IPython.display import display
 # Custom scripts
-import sheet
 from results_loader import read_per_f_results
 
 # Per frame data of algo 1 
@@ -17,16 +16,26 @@ selected_img = None
 selected_img_dataset = None
 # By which score will be the 2 algos compared
 difference_type = 'AP' # default AP
+
+# Function for setting row index list which will be showed in algo selector
+def import_sheet_row_index(index_list):
+    algo_list = index_list    
+    algo_selector_1.options = algo_list
+    algo_selector_2.options = algo_list
+def import_sheet_col_index(index_list):
+    dataset_list = index_list        
 def load_data_1(change):
     global data_1
     algo_1 = change['new']
-    data_1 = read_per_f_results (algo_1)
-    compare_results()
+    if algo_1 != None:
+        data_1 = read_per_f_results (algo_1)
+        compare_results()
 def load_data_2(change):
     global data_2
     algo_2 = change['new']
-    data_2 = read_per_f_results (algo_2)
-    compare_results()
+    if algo_2 != None:
+        data_2 = read_per_f_results (algo_2)
+        compare_results()
 # Compares results and sorts them by biggest difference in selected score type
 def compare_results():
     global sorted_keys
@@ -65,19 +74,13 @@ def display_controls():
 # Prepare dropdowns to select algo
 def prepare_algo_selectors():
     algo_selector_1 = widgets.Dropdown(
-        options=['grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
-                'grood_logml_1000K_01adamw_tau10_resetthr1',
-                'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf1_ioodpdf0uni1m0s1c1_staticood1'],
-        value= 'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
+        options=[],
         description='Algo:',
         disabled=False,
     )
     algo_selector_1.observe(load_data_1, names='value')
     algo_selector_2 = widgets.Dropdown(
-        options=['grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
-                'grood_logml_1000K_01adamw_tau10_resetthr1',
-                'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf1_ioodpdf0uni1m0s1c1_staticood1'],
-        value= 'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
+        options=[],
         description='Algo:',
         disabled=False,
     )
