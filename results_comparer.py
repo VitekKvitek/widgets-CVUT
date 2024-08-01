@@ -32,12 +32,14 @@ def import_sheet_row_index(index_list):
         algo_selector_2.value = selector_2_value
 def import_sheet_col_index(index_list):
     dataset_list = index_list        
+# Called after alg selection 1
 def load_data_1(change):
     global data_1
     algo_1 = change['new']
     if algo_1 != None:
         data_1 = read_per_f_results (algo_1)
         compare_results()
+# Called after alg selection 2
 def load_data_2(change):
     global data_2
     algo_2 = change['new']
