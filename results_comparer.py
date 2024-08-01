@@ -15,13 +15,21 @@ selected_img = None
 # Selected img dataset - functions only for giving to the other part of code
 selected_img_dataset = None
 # By which score will be the 2 algos compared
-difference_type = 'AP' # default AP
+difference_type = 'AP'
 
 # Function for setting row index list which will be showed in algo selector
 def import_sheet_row_index(index_list):
-    algo_list = index_list    
+    algo_list = index_list
+    selector_1_value = algo_selector_1.value
+    selector_2_value = algo_selector_2.value
     algo_selector_1.options = algo_list
     algo_selector_2.options = algo_list
+    # TODO slow
+    # Mechanism for displaying old selection 
+    if selector_1_value in index_list:
+        algo_selector_1.value = selector_1_value
+    if selector_2_value in index_list:
+        algo_selector_2.value = selector_2_value
 def import_sheet_col_index(index_list):
     dataset_list = index_list        
 def load_data_1(change):
@@ -64,6 +72,12 @@ def set_difference_type(button):
     if new_difference_type != difference_type:
         difference_type = new_difference_type
         compare_results()
+    if new_difference_type == 'AP':
+        hbox_button.children[0].button_style = 'info'
+        hbox_button.children[1].button_style = ''
+    else:
+        hbox_button.children[0].button_style = ''
+        hbox_button.children[1].button_style = 'info'
 # Displays all widgets needed for comparer to function
 def display_controls():
     display(algo_selector_1,
@@ -90,6 +104,7 @@ def prepare_algo_selectors():
 def prepare_difference_type_buttons():    
     button_AP = widgets.Button(description="Difference by AP")
     button_AP.on_click(set_difference_type)
+    button_AP.button_style = 'info'
     button_FPRat95 = widgets.Button(description="Difference by FPRat95")
     button_FPRat95.on_click(set_difference_type)
     button_list = [button_AP,button_FPRat95]
