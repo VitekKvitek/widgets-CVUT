@@ -4,6 +4,10 @@ from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
 
+
+algo_1 = None
+
+algo_2 = None
 # Per frame data of algo 1 
 data_1 = None
 # Per frame data of algo 2
@@ -34,18 +38,12 @@ def import_sheet_col_index(index_list):
     dataset_list = index_list        
 # Called after alg selection 1
 def load_data_1(change):
-    global data_1
+    global algo_1
     algo_1 = change['new']
-    if algo_1 != None:
-        data_1 = read_per_f_results (algo_1)
-        compare_results()
 # Called after alg selection 2
 def load_data_2(change):
-    global data_2
+    global algo_2
     algo_2 = change['new']
-    if algo_2 != None:
-        data_2 = read_per_f_results (algo_2)
-        compare_results()
 # Compares results and sorts them by biggest difference in selected score type
 def compare_results():
     global sorted_keys
@@ -80,10 +78,21 @@ def set_difference_type(button):
     else:
         hbox_button.children[0].button_style = ''
         hbox_button.children[1].button_style = 'info'
+def make_confirmation(*args,**kwargs):
+    global data_1
+    global data_2
+    
+    if algo_1 != None:
+        data_1 = read_per_f_results (algo_1)
+    if algo_2 != None:
+        data_2 = read_per_f_results (algo_2)
+    compare_results()
 # Displays all widgets needed for comparer to function
 def display_controls():
-    display(algo_selector_1,
-            algo_selector_2,
+    hbox_selector = widgets.HBox([algo_selector_1,
+                                  algo_selector_2,
+                                  confirm_button])
+    display(hbox_selector,
             hbox_button,
             img_selector)
 # TODO load algo z sheet.py
@@ -121,6 +130,11 @@ def prepare_img_selector():
     )
     img_selector.observe(set_selected_img, names='value')
     return img_selector
+def prepare_confirm_button():
+    confirm_button = widgets.Button(description="Confirm algs")
+    confirm_button.on_click(make_confirmation)
+    return confirm_button
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
 img_selector = prepare_img_selector()
+confirm_button = prepare_confirm_button()
