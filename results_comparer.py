@@ -46,14 +46,12 @@ def set_selected_img(change):
     selected_img_folder = data_1[selected_img]['dataset']
     print(selected_img)
     print(selected_img_folder)
-def set_difference_type_AP(*args,**kwargs):
+def set_difference_type(button):
     global difference_type
-    difference_type = 'AP'
-    compare_results()
-def set_difference_type_FPRat95(*args,**kwargs):
-    global difference_type
-    difference_type = 'FPRat95'
-    compare_results()
+    new_difference_type = button.description.split()[-1]
+    if new_difference_type != difference_type:
+        difference_type = new_difference_type
+        compare_results()
 def display_controls():
     display(algo_selector_1,
             algo_selector_2,
@@ -82,9 +80,9 @@ def prepare_algo_selectors():
     return algo_selector_1, algo_selector_2
 def prepare_difference_type_buttons():    
     button_AP = widgets.Button(description="Difference by AP")
-    button_AP.on_click(set_difference_type_AP)
+    button_AP.on_click(set_difference_type)
     button_FPRat95 = widgets.Button(description="Difference by FPRat95")
-    button_FPRat95.on_click(set_difference_type_FPRat95)
+    button_FPRat95.on_click(set_difference_type)
     button_list = [button_AP,button_FPRat95]
     hbox_button = widgets.HBox(button_list)
     return hbox_button
