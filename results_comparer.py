@@ -36,11 +36,11 @@ def import_sheet_row_index(index_list):
         algo_selector_2.value = selector_2_value
 def import_sheet_col_index(index_list):
     dataset_list = index_list
-    folder_selector_value = folder_selector.value
-    folder_selector.options = dataset_list
+    folder_selector_value = dataset_selector.value
+    dataset_selector.options = dataset_list
     # System for displaying old selection 
     if folder_selector_value in dataset_list:
-        folder_selector.value = folder_selector_value
+        dataset_selector.value = folder_selector_value
 # Called after alg selection 1
 def load_data_1(change):
     global algo_1
@@ -110,7 +110,7 @@ def display_controls():
                                   confirm_button])
     display(hbox_selector,
             hbox_button,
-            folder_selector,
+            dataset_selector,
             img_selector)
 # TODO load algo z sheet.py
 # Prepare dropdowns to select algo
@@ -165,5 +165,5 @@ def prepare_confirm_button():
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
 confirm_button = prepare_confirm_button()
-folder_selector = prepare_dataset_selector()
+dataset_selector = prepare_dataset_selector()
 img_selector = prepare_img_selector()
