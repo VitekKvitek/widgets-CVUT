@@ -81,6 +81,8 @@ def drop_blackllisted():
 def sort_button_on_click(button):
     global display_df
     global average_type
+    #TODO remove
+    export_sheet_column_index_to_comparer()
     # It gets score type from the description of button
     score_type = button.description.split()[-1]
     average_type = score_type
@@ -122,6 +124,7 @@ def on_button_toggle_ds_bl(change):
         button.button_style = 'info'
         # Removes clicked on dataset from black list
         bl_col.remove(button_description)
+    export_sheet_column_index_to_comparer()
     update_sheet()
 # Functin which updates the showed (displayed) table
 def update_sheet():
@@ -226,7 +229,7 @@ def initial_display():
     display(prepare_algo_black_list())
     display(prepare_dataset_black_list())
     export_sheet_row_index_to_comparer()
-    export_sheet_column_index_to_compare()
+    export_sheet_column_index_to_comparer()
 def style_display_sheet():
     global display_df
     display_df = display_df.style.background_gradient(low=0.25,high=1)
@@ -237,6 +240,9 @@ def export_sheet_row_index_to_comparer():
     algo_list = [item for item in algo_list if item not in bl_row]
     results_comparer.import_sheet_row_index(algo_list)
     # TODO
-def export_sheet_column_index_to_compare():
-    
-    dataset_list = display_df.columns
+def export_sheet_column_index_to_comparer():
+    df_column_list = df.columns.get_level_values(0)
+    df_column_list = list(set(df_column_list))
+    df_column_list.remove('Average')
+    df_column_list = [item for item in df_column_list if item not in bl_col]
+    results_comparer.import_sheet_col_index(df_column_list)
