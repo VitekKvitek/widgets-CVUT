@@ -72,15 +72,10 @@ def compare_results():
         dataset_sorted_keys = sorted(differences, key=differences.get, reverse=True)
         sorted_keys[dataset_key] = dataset_sorted_keys
     # Updates the options of img_selector
-    #TODO
-    #img_selector.options = sorted_keys
-# Sets new img
-#TODO
+    update_img_selector()
 def set_selected_img(change):
     global selected_img
-    global selected_img_dataset
     selected_img = change['new']
-    print(selected_img)
 # Sets difference type by which it will be sorted
 def set_difference_type(button):
     global difference_type
@@ -103,16 +98,18 @@ def make_confirmation(*args,**kwargs):
     if algo_2 != None:
         data_2 = read_per_f_results (algo_2)
     compare_results()
+def update_selected_dataset(change):
+    global selected_img_dataset
+    dataset = change['new']
+    selected_img_dataset = dataset
+    update_img_selector()
+def update_img_selector():
+    img_selector.options = sorted_keys[selected_img_dataset]
+# TODO call Jirka
+def select_image():
+    print(select_image)
+    print(selected_img_dataset)
 # Displays all widgets needed for comparer to function
-def display_controls():
-    hbox_selector = widgets.HBox([algo_selector_1,
-                                  algo_selector_2,
-                                  confirm_button])
-    display(hbox_selector,
-            hbox_button,
-            dataset_selector,
-            img_selector)
-# TODO load algo z sheet.py
 # Prepare dropdowns to select algo
 def prepare_algo_selectors():
     algo_selector_1 = widgets.Dropdown(
@@ -138,9 +135,6 @@ def prepare_difference_type_buttons():
     button_list = [button_AP,button_FPRat95]
     hbox_button = widgets.HBox(button_list)
     return hbox_button
-def update_img_selector(change):
-    dataset = change['new']
-    img_selector.options = sorted_keys[dataset]
 # Prepares dropdown widgets which lists all available images for each dataset
 def prepare_img_selector():
     img_selector = widgets.Dropdown(
@@ -156,14 +150,29 @@ def prepare_dataset_selector():
         description= 'Dataset',
         disabled = False
     )
-    dataset_selector.observe(update_img_selector, names='value')
+    dataset_selector.observe(update_selected_dataset, names='value')
     return dataset_selector
 def prepare_confirm_button():
     confirm_button = widgets.Button(description="Confirm algs")
     confirm_button.on_click(make_confirmation)
     return confirm_button
+def prepare_select_img_button():
+    button_select = widgets.Button(description="Select image")
+    button_select.on_click(select_image)
+    return button_select
+def display_controls():
+    hbox_alg_selector = widgets.HBox([algo_selector_1,
+                                  algo_selector_2,
+                                  confirm_button])
+    hbox_img_selector = widgets.HBox([dataset_selector,
+                                      img_selector,
+                                      select_button])
+    display(hbox_alg_selector,
+            hbox_button,
+            hbox_img_selector)
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
 confirm_button = prepare_confirm_button()
 dataset_selector = prepare_dataset_selector()
 img_selector = prepare_img_selector()
+select_button = prepare_select_img_button()
