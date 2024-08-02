@@ -29,13 +29,18 @@ def import_sheet_row_index(index_list):
     algo_selector_1.options = algo_list
     algo_selector_2.options = algo_list
     # TODO slow
-    # Mechanism for displaying old selection 
-    if selector_1_value in index_list:
+    # System for displaying old selection 
+    if selector_1_value in algo_list:
         algo_selector_1.value = selector_1_value
-    if selector_2_value in index_list:
+    if selector_2_value in algo_list:
         algo_selector_2.value = selector_2_value
 def import_sheet_col_index(index_list):
-    dataset_list = index_list        
+    dataset_list = index_list
+    folder_selector_value = dataset_selector.value
+    dataset_selector.options = dataset_list
+    # System for displaying old selection 
+    if folder_selector_value in dataset_list:
+        dataset_selector.value = folder_selector_value
 # Called after alg selection 1
 def load_data_1(change):
     global algo_1
@@ -66,17 +71,11 @@ def compare_results():
         # Sort the keys based on the differences in descending order
         dataset_sorted_keys = sorted(differences, key=differences.get, reverse=True)
         sorted_keys[dataset_key] = dataset_sorted_keys
-        update_one_img_selector(datset= dataset_key, sorted_files= dataset_sorted_keys)
     # Updates the options of img_selector
-    #TODO
-    #img_selector.options = sorted_keys
-# Sets new img
-#TODO
+    update_img_selector()
 def set_selected_img(change):
     global selected_img
-    global selected_img_dataset
     selected_img = change['new']
-    print(selected_img)
 # Sets difference type by which it will be sorted
 def set_difference_type(button):
     global difference_type
@@ -99,28 +98,29 @@ def make_confirmation(*args,**kwargs):
     if algo_2 != None:
         data_2 = read_per_f_results (algo_2)
     compare_results()
+def update_selected_dataset(change):
+    global selected_img_dataset
+    dataset = change['new']
+    selected_img_dataset = dataset
+    update_img_selector()
+def update_img_selector():
+    img_selector.options = sorted_keys[selected_img_dataset]
+# TODO call Jirka
+def select_image():
+    print(select_image)
+    print(selected_img_dataset)
 # Displays all widgets needed for comparer to function
-def display_controls():
-    img_selector_list = list(img_selector_dict.values())
-    hbox_img_selector = widgets.HBox(img_selector_list)
-    hbox_selector = widgets.HBox([algo_selector_1,
-                                  algo_selector_2,
-                                  confirm_button])
-    display(hbox_selector,
-            hbox_button,
-            hbox_img_selector)
-# TODO load algo z sheet.py
 # Prepare dropdowns to select algo
 def prepare_algo_selectors():
     algo_selector_1 = widgets.Dropdown(
         options=[],
-        description='Algo:',
+        description='Algo 1:',
         disabled=False,
     )
     algo_selector_1.observe(load_data_1, names='value')
     algo_selector_2 = widgets.Dropdown(
         options=[],
-        description='Algo:',
+        description='Algo 2:',
         disabled=False,
     )
     algo_selector_2.observe(load_data_2, names='value')
@@ -135,26 +135,44 @@ def prepare_difference_type_buttons():
     button_list = [button_AP,button_FPRat95]
     hbox_button = widgets.HBox(button_list)
     return hbox_button
-def update_one_img_selector(datset, sorted_files):
-    img_selector_dict[datset].options = sorted_files
 # Prepares dropdown widgets which lists all available images for each dataset
 def prepare_img_selector():
-    img_selector_dict = {}
-    # TODO hradcoded datasets
-    for dataset_key in ['RA','FS','RO21A','RO']:
-        new_img_selector = widgets.Dropdown(
-            options=[],
-                description=dataset_key,
-            disabled=False,
-        )
-        new_img_selector.observe(set_selected_img, names='value')
-        img_selector_dict[dataset_key] = new_img_selector
-    return img_selector_dict
+    img_selector = widgets.Dropdown(
+        options=[],
+        description='Image',
+        disabled=False,
+    )
+    img_selector.observe(set_selected_img, names='value')
+    return img_selector
+def prepare_dataset_selector():
+    dataset_selector = widgets.Dropdown(
+        options = [],
+        description= 'Dataset',
+        disabled = False
+    )
+    dataset_selector.observe(update_selected_dataset, names='value')
+    return dataset_selector
 def prepare_confirm_button():
     confirm_button = widgets.Button(description="Confirm algs")
     confirm_button.on_click(make_confirmation)
     return confirm_button
+def prepare_select_img_button():
+    button_select = widgets.Button(description="Select image")
+    button_select.on_click(select_image)
+    return button_select
+def display_controls():
+    hbox_alg_selector = widgets.HBox([algo_selector_1,
+                                  algo_selector_2,
+                                  confirm_button])
+    hbox_img_selector = widgets.HBox([dataset_selector,
+                                      img_selector,
+                                      select_button])
+    display(hbox_alg_selector,
+            hbox_button,
+            hbox_img_selector)
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
-img_selector_dict = prepare_img_selector()
 confirm_button = prepare_confirm_button()
+dataset_selector = prepare_dataset_selector()
+img_selector = prepare_img_selector()
+select_button = prepare_select_img_button()
