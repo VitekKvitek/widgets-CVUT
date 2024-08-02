@@ -66,7 +66,6 @@ def compare_results():
         # Sort the keys based on the differences in descending order
         dataset_sorted_keys = sorted(differences, key=differences.get, reverse=True)
         sorted_keys[dataset_key] = dataset_sorted_keys
-        update_one_img_selector(datset= dataset_key, sorted_files= dataset_sorted_keys)
     # Updates the options of img_selector
     #TODO
     #img_selector.options = sorted_keys
@@ -101,14 +100,13 @@ def make_confirmation(*args,**kwargs):
     compare_results()
 # Displays all widgets needed for comparer to function
 def display_controls():
-    img_selector_list = list(img_selector_dict.values())
-    hbox_img_selector = widgets.HBox(img_selector_list)
     hbox_selector = widgets.HBox([algo_selector_1,
                                   algo_selector_2,
                                   confirm_button])
     display(hbox_selector,
             hbox_button,
-            hbox_img_selector)
+            folder_selector,
+            img_selector)
 # TODO load algo z sheet.py
 # Prepare dropdowns to select algo
 def prepare_algo_selectors():
@@ -135,26 +133,35 @@ def prepare_difference_type_buttons():
     button_list = [button_AP,button_FPRat95]
     hbox_button = widgets.HBox(button_list)
     return hbox_button
-def update_one_img_selector(datset, sorted_files):
-    img_selector_dict[datset].options = sorted_files
+def update_img_selector(change):
+    print(change)
+    dataset = change['new']
+    print('ofk')
+    img_selector.options = sorted_keys[dataset]
 # Prepares dropdown widgets which lists all available images for each dataset
 def prepare_img_selector():
-    img_selector_dict = {}
+    img_selector = widgets.Dropdown(
+        options=[],
+        description='Image',
+        disabled=False,
+    )
+    img_selector.observe(set_selected_img, names='value')
+    return img_selector
+def prepare_dataset_selector():
     # TODO hradcoded datasets
-    for dataset_key in ['RA','FS','RO21A','RO']:
-        new_img_selector = widgets.Dropdown(
-            options=[],
-                description=dataset_key,
-            disabled=False,
-        )
-        new_img_selector.observe(set_selected_img, names='value')
-        img_selector_dict[dataset_key] = new_img_selector
-    return img_selector_dict
+    dataset_selector = widgets.Dropdown(
+        options = ['RA','FS','RO21A','RO'],
+        description= 'Dataset',
+        disabled = False
+    )
+    dataset_selector.observe(update_img_selector, names='value')
+    return dataset_selector
 def prepare_confirm_button():
     confirm_button = widgets.Button(description="Confirm algs")
     confirm_button.on_click(make_confirmation)
     return confirm_button
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
-img_selector_dict = prepare_img_selector()
 confirm_button = prepare_confirm_button()
+folder_selector = prepare_dataset_selector()
+img_selector = prepare_img_selector()
