@@ -29,13 +29,18 @@ def import_sheet_row_index(index_list):
     algo_selector_1.options = algo_list
     algo_selector_2.options = algo_list
     # TODO slow
-    # Mechanism for displaying old selection 
-    if selector_1_value in index_list:
+    # System for displaying old selection 
+    if selector_1_value in algo_list:
         algo_selector_1.value = selector_1_value
-    if selector_2_value in index_list:
+    if selector_2_value in algo_list:
         algo_selector_2.value = selector_2_value
 def import_sheet_col_index(index_list):
-    dataset_list = index_list        
+    dataset_list = index_list
+    folder_selector_value = folder_selector.value
+    folder_selector.options = dataset_list
+    # System for displaying old selection 
+    if folder_selector_value in dataset_list:
+        folder_selector.value = folder_selector_value
 # Called after alg selection 1
 def load_data_1(change):
     global algo_1
@@ -112,13 +117,13 @@ def display_controls():
 def prepare_algo_selectors():
     algo_selector_1 = widgets.Dropdown(
         options=[],
-        description='Algo:',
+        description='Algo 1:',
         disabled=False,
     )
     algo_selector_1.observe(load_data_1, names='value')
     algo_selector_2 = widgets.Dropdown(
         options=[],
-        description='Algo:',
+        description='Algo 2:',
         disabled=False,
     )
     algo_selector_2.observe(load_data_2, names='value')
@@ -134,9 +139,7 @@ def prepare_difference_type_buttons():
     hbox_button = widgets.HBox(button_list)
     return hbox_button
 def update_img_selector(change):
-    print(change)
     dataset = change['new']
-    print('ofk')
     img_selector.options = sorted_keys[dataset]
 # Prepares dropdown widgets which lists all available images for each dataset
 def prepare_img_selector():
@@ -148,9 +151,8 @@ def prepare_img_selector():
     img_selector.observe(set_selected_img, names='value')
     return img_selector
 def prepare_dataset_selector():
-    # TODO hradcoded datasets
     dataset_selector = widgets.Dropdown(
-        options = ['RA','FS','RO21A','RO'],
+        options = [],
         description= 'Dataset',
         disabled = False
     )
