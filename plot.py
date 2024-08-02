@@ -48,7 +48,7 @@ def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
 
 def drawContours(original_image, original_gt, dataset, threshold):
     
-    #TODO debuging
+    #if BUG debuging
     #plt.imshow(original_gt)
     #plt.title(dataset)
     #plt.axis('off')
