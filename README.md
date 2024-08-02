@@ -1,4 +1,4 @@
-# Interactive widgets for data visualsation
+# Interactive widgets for data visualisation
 ## Hint
 * store data in data folder
 * settings are saved in settings folder

@@ -13,7 +13,7 @@ data_1 = None
 # Per frame data of algo 2
 data_2 = None
 # List of sorted keys by difference
-sorted_keys = None
+sorted_keys = {}
 # Selected img to show and compare the 2 algos visually
 selected_img = None
 # Selected img dataset - functions only for giving to the other part of code
@@ -50,21 +50,33 @@ def compare_results():
     # Returns if any of the data are None - can not compare only singular data
     if data_1 == None or data_2 == None:
         return
-    # Calculate the absolute differences and store them in a new dictionary
-    differences = {key: abs(data_1[key][difference_type] - data_2[key][difference_type]) for key in data_1}
-    # Sort the keys based on the differences in descending order
-    sorted_keys = sorted(differences, key=differences.get, reverse=True)
+    for dataset_key in data_1.keys():
+        dataset_algo_1 = data_1[dataset_key]
+        dataset_algo_2 = data_2[dataset_key]
+        # Calculate the absolute differences and store them in a new dictionary
+        differences = {}
+        for key in dataset_algo_1:
+            # Extract the value for the given difference type from both datasets
+            value_1 = dataset_algo_1[key][difference_type]
+            value_2 = dataset_algo_2[key][difference_type]
+            # Calculate the absolute difference between the values
+            difference = abs(value_1 - value_2)
+            # Store the difference in the dictionary with the key
+            differences[key] = difference
+        # Sort the keys based on the differences in descending order
+        dataset_sorted_keys = sorted(differences, key=differences.get, reverse=True)
+        sorted_keys[dataset_key] = dataset_sorted_keys
+        update_one_img_selector(datset= dataset_key, sorted_files= dataset_sorted_keys)
     # Updates the options of img_selector
     #TODO
-    img_selector.options = sorted_keys
+    #img_selector.options = sorted_keys
 # Sets new img
+#TODO
 def set_selected_img(change):
     global selected_img
     global selected_img_dataset
     selected_img = change['new']
-    selected_img_dataset = data_1[selected_img]['dataset']
     print(selected_img)
-    print(selected_img_dataset)
 # Sets difference type by which it will be sorted
 def set_difference_type(button):
     global difference_type
@@ -89,12 +101,14 @@ def make_confirmation(*args,**kwargs):
     compare_results()
 # Displays all widgets needed for comparer to function
 def display_controls():
+    img_selector_list = list(img_selector_dict.values())
+    hbox_img_selector = widgets.HBox(img_selector_list)
     hbox_selector = widgets.HBox([algo_selector_1,
                                   algo_selector_2,
                                   confirm_button])
     display(hbox_selector,
             hbox_button,
-            img_selector)
+            hbox_img_selector)
 # TODO load algo z sheet.py
 # Prepare dropdowns to select algo
 def prepare_algo_selectors():
@@ -121,20 +135,26 @@ def prepare_difference_type_buttons():
     button_list = [button_AP,button_FPRat95]
     hbox_button = widgets.HBox(button_list)
     return hbox_button
-# Prepares dropdown widget which lists all available images
+def update_one_img_selector(datset, sorted_files):
+    img_selector_dict[datset].options = sorted_files
+# Prepares dropdown widgets which lists all available images for each dataset
 def prepare_img_selector():
-    img_selector = widgets.Dropdown(
-        options=[],
-            description='File:',
-        disabled=False,
-    )
-    img_selector.observe(set_selected_img, names='value')
-    return img_selector
+    img_selector_dict = {}
+    # TODO hradcoded datasets
+    for dataset_key in ['RA','FS','RO21A','RO']:
+        new_img_selector = widgets.Dropdown(
+            options=[],
+                description=dataset_key,
+            disabled=False,
+        )
+        new_img_selector.observe(set_selected_img, names='value')
+        img_selector_dict[dataset_key] = new_img_selector
+    return img_selector_dict
 def prepare_confirm_button():
     confirm_button = widgets.Button(description="Confirm algs")
     confirm_button.on_click(make_confirmation)
     return confirm_button
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
-img_selector = prepare_img_selector()
+img_selector_dict = prepare_img_selector()
 confirm_button = prepare_confirm_button()
