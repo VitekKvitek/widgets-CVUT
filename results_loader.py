@@ -51,9 +51,7 @@ def read_per_f_results(algo):
     for dataset_f in dataset_folders:
         per_f_json_path = os.path.join(a_folder_path, dataset_f, per_f_json_general_path)
         results = read_per_f_json(per_f_json_path)
-        for key in results:
-            results[key]['dataset'] = dataset_f
-        all_datasets_per_f_res = all_datasets_per_f_res | results
+        all_datasets_per_f_res[dataset_f] = results
     return all_datasets_per_f_res
 
 #read_per_f_results('grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1')
