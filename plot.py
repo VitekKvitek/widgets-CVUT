@@ -4,6 +4,7 @@ import os
 from os import listdir, path
 from os.path import isfile, join
 
+import matplotlib.pyplot as plt
 
 def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
     #print(threshold)
@@ -46,6 +47,13 @@ def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
     return combined_image
 
 def drawContours(original_image, original_gt, dataset, threshold):
+    
+    #TODO debuging
+    #plt.imshow(original_gt)
+    #plt.title(dataset)
+    #plt.axis('off')
+    #plt.show()
+    
     road_clr_con = (0,255,0)   # Green for road contours
     obstacle_clr_con = (255,0,0)  # Red for obstacle contours
     thickness = 3
@@ -98,23 +106,26 @@ def contract(name):
             contraction = None
     return contraction
 
-def load_images(selected_file, use_dataset, selected_folder, selected_model):
-    # Determine folder paths
-    base_folder_path = 'data/export/datasets/' + selected_folder + '/test/'
-    if use_dataset:
-        gt_folder_path = os.path.join(base_folder_path, 'gt')
+def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
+    # Determine gt path
+        
+    if use_dataset:        
+        gt_folder_path = os.path.join(get_base_folder(selected_folder), 'gt')
         original_gt_path = os.path.join(gt_folder_path, selected_file)
     else:
-        results_folder = os.path.join('data/export/results/', selected_model, contract(selected_folder), 'preds')
+        results_folder = os.path.join('data/export/results/', selected_algo, contract(selected_folder), 'preds')
         base_filename = os.path.splitext(selected_file)[0]
         original_gt_path = os.path.join(results_folder, f"{base_filename}..png.npy")
+    #print(original_gt_path)
 
     # Load ground truth
     original_gt = cv.imread(original_gt_path) if use_dataset else np.load(original_gt_path)
     assert original_gt is not None, f"original_gt could not be read from {original_gt_path}"
+    return original_gt
 
+def load_image(selected_file, selected_folder):
     # Load original image
-    imgs_folder_path = os.path.join(base_folder_path, 'imgs')
+    imgs_folder_path = os.path.join(get_base_folder(selected_folder), 'imgs')
     original_image_path = os.path.join(imgs_folder_path, selected_file)
     #print(original_image_path)
     original_image = cv.imread(original_image_path)
@@ -122,9 +133,10 @@ def load_images(selected_file, use_dataset, selected_folder, selected_model):
 
     # Convert BGR to RGB format
     original_image_rgb = original_image[:, :, [2, 1, 0]]
-    return original_image_rgb, original_gt
+    return original_image_rgb
 
-
-
-
+def get_base_folder(selected_folder):
+    # Determine folder path
+    base_folder_path = 'data/export/datasets/' + selected_folder + '/test/'
+    return base_folder_path
 
