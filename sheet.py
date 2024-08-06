@@ -130,15 +130,7 @@ def update_sheet():
     drop_blackllisted()
     calculate_mean_average()
     display_df = sort_by_average(display_df)
-    styled_df = display_df.style.apply(highlight_min_max, axis= 0)
-    styled_df = styled_df.format(lambda x: "{:.1f}".format(x * 100))
-    column_width = 60  # Fixed width in pixels
-    styled_df = styled_df.set_table_styles(
-    {
-        (col[0], col[1]): [{'selector': 'th, td', 'props': [('width', f'{column_width}px')]}]
-        for col in df.columns
-    }
-)
+    styled_df = style_dataframe(display_df)
     with out:
         out.clear_output()
         display(HTML(styled_df.to_html()))
@@ -228,15 +220,7 @@ def initial_display():
     prepare_df()
     button_AP, button_FPRat95 = prepare_sort_buttons()
     display(button_AP,button_FPRat95)
-    styled_df = display_df.style.apply(highlight_min_max, axis= 0)
-    styled_df = styled_df.format(lambda x: "{:.1f}".format(x * 100))
-    column_width = 60  # Fixed width in pixels
-    styled_df = styled_df.set_table_styles(
-    {
-        (col[0], col[1]): [{'selector': 'th, td', 'props': [('width', f'{column_width}px')]}]
-        for col in df.columns
-    }
-)
+    styled_df = style_dataframe(display_df)
     with out:
         display(HTML(styled_df.to_html()))
     display(out)
@@ -244,17 +228,57 @@ def initial_display():
     display(prepare_dataset_black_list())
     export_sheet_row_index_to_comparer()
     export_sheet_column_index_to_comparer()
-def highlight_min_max(column):
-    if column.name[1] == 'AP':
-        is_max = column == column.max()
-        is_min = column == column.min()
-        return ['background-color: lightgreen' if max_v else 'background-color: lightcoral' if min_v else '' for max_v, min_v in zip(is_max, is_min)]
-    elif column.name[1] == 'FPRat95':
-        is_min = column == column.min()
-        is_max = column == column.max()
-        return ['background-color: lightgreen' if min_v else 'background-color: lightcoral' if max_v else '' for min_v, max_v in zip(is_min, is_max)]
-    else:
-        return ['' for _ in column]
+# Styling function
+def style_dataframe(df, column_width=60):
+    """
+    Styles the DataFrame by highlighting min and max values, formatting numbers,
+    and setting fixed column widths.
+    
+    Parameters:
+    - df: pd.DataFrame
+        The DataFrame with multi-index columns to be styled.
+    - column_width: int
+        The fixed width of each column in pixels.
+    
+    Returns:
+    - styled_df: Styler
+        A Pandas Styler object with applied styles and formatting.
+    """
+    
+    # Define a function to highlight the max/min values with green and the opposite with red
+    def highlight_min_max(column):
+        if column.name[1] == 'AP':
+            is_max = column == column.max()
+            is_min = column == column.min()
+            return [
+                'background-color: lightgreen' if max_v else 'background-color: lightcoral' if min_v else ''
+                for max_v, min_v in zip(is_max, is_min)
+            ]
+        elif column.name[1] == 'FPRat95':
+            is_min = column == column.min()
+            is_max = column == column.max()
+            return [
+                'background-color: lightgreen' if min_v else 'background-color: lightcoral' if max_v else ''
+                for min_v, max_v in zip(is_min, is_max)
+            ]
+        else:
+            return ['' for _ in column]
+
+    # Apply highlighting
+    styled_df = df.style.apply(highlight_min_max, axis=0)
+
+    # Format the numbers to be multiplied by 100 and display with one decimal place
+    styled_df = styled_df.format(lambda x: "{:.1f}".format(x * 100))
+
+    # Set fixed column widths
+    styled_df = styled_df.set_table_styles(
+        {
+            (col[0], col[1]): [{'selector': 'th, td', 'props': [('width', f'{column_width}px')]}]
+            for col in df.columns
+        }
+    )
+
+    return styled_df
 def export_sheet_row_index_to_comparer():
     algo_list = df.index
     algo_list = [item for item in algo_list if item not in bl_row]
