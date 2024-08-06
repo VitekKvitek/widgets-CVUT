@@ -188,3 +188,23 @@ def process_image(img, gt, use_dataset, thresh, def_gt = None):
     
     return four_imgs
 
+def save_image(r1, r2, r3, b):
+    # Create 'output' directory if it doesn't exist
+    output_dir = 'output'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Define the filename with the 'output' directory
+    filename = os.path.join(output_dir, 'combined_image.png')
+    
+    final_rgb = combine_rows(r1, r2, r3)[:, :, [2, 1, 0]]
+    
+    cv.imwrite(filename, final_rgb)
+    
+    #TODO display properly
+    #display(FileLink(filename))
+
+def combine_rows(r1, r2, r3):
+    final_image = np.concatenate((r1, r2, r3), axis=0)  
+    return final_image
+
