@@ -46,10 +46,9 @@ def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
 
     if opacity != 1:
         combined_image = cv.addWeighted(combined_mask, opacity, original_image, 1, 0)
-    else:
-        inverted_mask = np.where(combined_mask == 0, 1, 0).astype(np.uint8)
-        combined_image = cv.add(combined_mask, (inverted_mask * original_image))
-    
+    else:        
+        combined_image = np.where(combined_mask.any(axis=-1, keepdims=True), combined_mask, original_image)
+
     return combined_image
 
 def drawContours(original_image, original_gt, dataset, threshold):
