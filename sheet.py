@@ -130,10 +130,10 @@ def update_sheet():
     drop_blackllisted()
     calculate_mean_average()
     display_df = sort_by_average(display_df)
-    styled_display_df = style_df(display_df)
+    styled_df = style_dataframe(display_df)
     with out:
         out.clear_output()
-        display(HTML(styled_display_df.to_html()))
+        display(HTML(styled_df.to_html()))
 # Initial prepare of dataframe
 def prepare_df():
     global df
@@ -171,6 +171,7 @@ def prepare_df():
     df[('Average', 'AP')] = ap_mean
     df[('Average', 'FPRat95')] = fprat95_mean
     display_df = df.copy()
+    display_df = sort_by_average(display_df)
 # Function for preparing toggle buttons (blacklist) for algos
 def prepare_algo_black_list():
     all_algos = indexes
@@ -219,7 +220,7 @@ def initial_display():
     prepare_df()
     button_AP, button_FPRat95 = prepare_sort_buttons()
     display(button_AP,button_FPRat95)
-    styled_df = style_df(display_df)
+    styled_df = style_dataframe(display_df)
     with out:
         display(HTML(styled_df.to_html()))
     display(out)
@@ -227,10 +228,65 @@ def initial_display():
     display(prepare_dataset_black_list())
     export_sheet_row_index_to_comparer()
     export_sheet_column_index_to_comparer()
-def style_df(df):
-    styled_1_df = df.style.highlight_max()
-    # styled_2_df = styled_1_df.style.highlight_min()
-    return styled_1_df
+# Styling function
+def style_dataframe(df, column_width=60, border_style='solid', border_width='2px', border_color='black'):
+    """
+    Styles the DataFrame by highlighting min and max values, formatting numbers,
+    setting fixed column widths, and drawing lines between columns.
+    
+    Parameters:
+    - df: pd.DataFrame
+        The DataFrame with multi-index columns to be styled.
+    - column_width: int
+        The fixed width of each column in pixels.
+    - border_style: str
+        The style of the border (e.g., 'solid', 'dashed').
+    - border_width: str
+        The width of the border (e.g., '2px').
+    - border_color: str
+        The color of the border (e.g., 'black').
+    
+    Returns:
+    - styled_df: Styler
+        A Pandas Styler object with applied styles and formatting.
+    """
+    
+    # Define a function to highlight the max/min values with green and the opposite with red
+    def highlight_min_max(column):
+        if column.name[1] == 'AP':
+            is_max = column == column.max()
+            is_min = column == column.min()
+            return [
+                'background-color: lightgreen' if max_v else 'background-color: lightcoral' if min_v else ''
+                for max_v, min_v in zip(is_max, is_min)
+            ]
+        elif column.name[1] == 'FPRat95':
+            is_min = column == column.min()
+            is_max = column == column.max()
+            return [
+                'background-color: lightgreen' if min_v else 'background-color: lightcoral' if max_v else ''
+                for min_v, max_v in zip(is_min, is_max)
+            ]
+        else:
+            return ['' for _ in column]
+    # Apply highlighting
+    styled_df = df.style.apply(highlight_min_max, axis=0)
+    # Format the numbers to be multiplied by 100 and display with one decimal place
+    styled_df = styled_df.format(lambda x: "{:.2f}".format(x * 100))
+    # Set fixed column widths and add borders between columns
+    styles = {
+        (col[0], col[1]): [
+            {'selector': 'th', 'props': [('width', f'{column_width}px'), ('border-right', f'{border_width} {border_style} {border_color}')]}
+        ]
+        for col in df.columns
+    }
+    # Add border styling to data cells
+    for col in df.columns:
+        styles[(col[0], col[1])].append({'selector': 'td', 'props': [('border-right', f'{border_width} {border_style} {border_color}')]})
+    # Set the styles in the Styler
+    styled_df = styled_df.set_table_styles(styles)
+
+    return styled_df
 def export_sheet_row_index_to_comparer():
     algo_list = df.index
     algo_list = [item for item in algo_list if item not in bl_row]
