@@ -6,20 +6,26 @@ from os.path import isfile, join
 
 import matplotlib.pyplot as plt
 
-def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
-    #print(threshold)
-    obstacle_clr = [255,0,0]  # Red obstacles
-    road_clr = [128,64,128]   # Purple road
 
-    assert original_image.shape[:2] == original_gt.shape[:2], "Images must have the same dimensions"
-
-    # Create binary masks from normalized gt values
+def create_mask(original_gt, dataset, threshold):
+    # Create binary masks from normalized values
     if(dataset):
         road_mask = (original_gt == 1)
         obstacle_mask = (original_gt == 0)
     else:
         road_mask = (original_gt <= threshold[0])  
         obstacle_mask = (original_gt > threshold[1]) 
+    
+    return road_mask, obstacle_mask
+
+
+def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
+    #print(threshold)
+    obstacle_clr = [255,0,0]  # Red obstacles
+    road_clr = [128,64,128]   # Purple road
+
+    assert original_image.shape[:2] == original_gt.shape[:2], "Images must have the same dimensions"
+    road_mask, obstacle_mask = create_mask(original_gt, dataset, threshold)
 
     # Create overlays
     road_overlay = np.zeros_like(original_image)
