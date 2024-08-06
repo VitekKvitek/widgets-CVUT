@@ -81,8 +81,6 @@ def drop_blackllisted():
 def sort_button_on_click(button):
     global display_df
     global average_type
-    #TODO remove
-    export_sheet_column_index_to_comparer()
     # It gets score type from the description of button
     score_type = button.description.split()[-1]
     average_type = score_type
@@ -132,9 +130,10 @@ def update_sheet():
     drop_blackllisted()
     calculate_mean_average()
     display_df = sort_by_average(display_df)
+    styled_display_df = style_df(display_df)
     with out:
         out.clear_output()
-        display(HTML(display_df.to_html()))
+        display(HTML(styled_display_df.to_html()))
 # Initial prepare of dataframe
 def prepare_df():
     global df
@@ -172,9 +171,6 @@ def prepare_df():
     df[('Average', 'AP')] = ap_mean
     df[('Average', 'FPRat95')] = fprat95_mean
     display_df = df.copy()
-    # BUG
-    # Apply the styling function
-    #style_display_sheet()
 # Function for preparing toggle buttons (blacklist) for algos
 def prepare_algo_black_list():
     all_algos = indexes
@@ -223,23 +219,22 @@ def initial_display():
     prepare_df()
     button_AP, button_FPRat95 = prepare_sort_buttons()
     display(button_AP,button_FPRat95)
+    styled_df = style_df(display_df)
     with out:
-        display(HTML(display_df.to_html()))
+        display(HTML(styled_df.to_html()))
     display(out)
     display(prepare_algo_black_list())
     display(prepare_dataset_black_list())
     export_sheet_row_index_to_comparer()
     export_sheet_column_index_to_comparer()
-def style_display_sheet():
-    global display_df
-    display_df = display_df.style.background_gradient(low=0.25,high=1)
-def get_all_displayed_algos():
-    return display_df.index
+def style_df(df):
+    styled_1_df = df.style.highlight_max()
+    # styled_2_df = styled_1_df.style.highlight_min()
+    return styled_1_df
 def export_sheet_row_index_to_comparer():
     algo_list = df.index
     algo_list = [item for item in algo_list if item not in bl_row]
     results_comparer.import_sheet_row_index(algo_list)
-    # TODO
 def export_sheet_column_index_to_comparer():
     df_column_list = df.columns.get_level_values(0)
     df_column_list = list(set(df_column_list))
