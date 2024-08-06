@@ -229,16 +229,22 @@ def initial_display():
     export_sheet_row_index_to_comparer()
     export_sheet_column_index_to_comparer()
 # Styling function
-def style_dataframe(df, column_width=60):
+def style_dataframe(df, column_width=60, border_style='solid', border_width='2px', border_color='black'):
     """
     Styles the DataFrame by highlighting min and max values, formatting numbers,
-    and setting fixed column widths.
+    setting fixed column widths, and drawing lines between columns.
     
     Parameters:
     - df: pd.DataFrame
         The DataFrame with multi-index columns to be styled.
     - column_width: int
         The fixed width of each column in pixels.
+    - border_style: str
+        The style of the border (e.g., 'solid', 'dashed').
+    - border_width: str
+        The width of the border (e.g., '2px').
+    - border_color: str
+        The color of the border (e.g., 'black').
     
     Returns:
     - styled_df: Styler
@@ -263,20 +269,22 @@ def style_dataframe(df, column_width=60):
             ]
         else:
             return ['' for _ in column]
-
     # Apply highlighting
     styled_df = df.style.apply(highlight_min_max, axis=0)
-
     # Format the numbers to be multiplied by 100 and display with one decimal place
-    styled_df = styled_df.format(lambda x: "{:.1f}".format(x * 100))
-
-    # Set fixed column widths
-    styled_df = styled_df.set_table_styles(
-        {
-            (col[0], col[1]): [{'selector': 'th, td', 'props': [('width', f'{column_width}px')]}]
-            for col in df.columns
-        }
-    )
+    styled_df = styled_df.format(lambda x: "{:.2f}".format(x * 100))
+    # Set fixed column widths and add borders between columns
+    styles = {
+        (col[0], col[1]): [
+            {'selector': 'th', 'props': [('width', f'{column_width}px'), ('border-right', f'{border_width} {border_style} {border_color}')]}
+        ]
+        for col in df.columns
+    }
+    # Add border styling to data cells
+    for col in df.columns:
+        styles[(col[0], col[1])].append({'selector': 'td', 'props': [('border-right', f'{border_width} {border_style} {border_color}')]})
+    # Set the styles in the Styler
+    styled_df = styled_df.set_table_styles(styles)
 
     return styled_df
 def export_sheet_row_index_to_comparer():
