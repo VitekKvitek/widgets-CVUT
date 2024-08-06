@@ -24,8 +24,8 @@ bl_row = []
 out = widgets.Output()
 
 # Stores the state of ascending AP and FPRat95
-ascend_AP = False
-ascend_FPRat95 = False
+ascend_AP = True
+ascend_FPRat95 = True
 # Stores the column by which it should be ordered
 average_type = 'AP'
 # Sorts the table based on selected criteria
@@ -52,15 +52,15 @@ def sort_by_average(df, called_by_button = False):
     # Determine the column to sort by
     
     if average_type == 'AP':
-        if called_by_button:
-            ascend_AP = not ascend_AP
         average_column = [('Average', 'AP')]
         ascend = ascend_AP
-    else:
         if called_by_button:
-            ascend_FPRat95 = not ascend_FPRat95
+            ascend_AP = not ascend_AP
+    else:
         average_column = [('Average', 'FPRat95')]
         ascend = ascend_FPRat95
+        if called_by_button:
+            ascend_FPRat95 = not ascend_FPRat95
     
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
@@ -83,7 +83,26 @@ def sort_button_on_click(button):
     global average_type
     # It gets score type from the description of button
     score_type = button.description.split()[-1]
+    # checks if the first word is order type
+    if button.description.split()[0] in ['asc', 'desc']:
+    # gets the description without the first word (asc or desc)
+        description = button.description.split()[1:]
+    else:
+        description = button.description.split()
     average_type = score_type
+    # Sets the new description
+    if score_type == 'AP':
+        button_FPRat95.description = 'Sort by FPRat95'
+        if ascend_AP:
+            button.description = 'asc ' + ' '.join(description)
+        else:
+            button.description = 'desc ' + ' '.join(description)
+    if score_type == 'FPRat95':
+        button_AP.description = 'Sort by AP'
+        if ascend_FPRat95:
+            button.description = 'asc ' + ' '.join(description)
+        else:
+            button.description = 'desc ' + ' '.join(description)
     display_df = sort_by_average(display_df, called_by_button=True)
     update_sheet()
 # Function that is called after toggle algo button clicked
@@ -215,19 +234,6 @@ def prepare_sort_buttons():
     button_FPRat95 = widgets.Button(description="Sort by FPRat95")
     button_FPRat95.on_click(sort_button_on_click)
     return button_AP, button_FPRat95
-# Function to display everything
-def initial_display():
-    prepare_df()
-    button_AP, button_FPRat95 = prepare_sort_buttons()
-    display(button_AP,button_FPRat95)
-    styled_df = style_dataframe(display_df)
-    with out:
-        display(HTML(styled_df.to_html()))
-    display(out)
-    display(prepare_algo_black_list())
-    display(prepare_dataset_black_list())
-    export_sheet_row_index_to_comparer()
-    export_sheet_column_index_to_comparer()
 # Styling function
 def style_dataframe(df, column_width=60, border_style='solid', border_width='2px', border_color='black'):
     """
@@ -308,3 +314,16 @@ def export_sheet_column_index_to_comparer():
     df_column_list.remove('Average')
     df_column_list = [item for item in df_column_list if item not in bl_col]
     results_comparer.import_sheet_col_index(df_column_list)
+# Function to display everything
+def initial_display():
+    prepare_df()
+    display(button_AP,button_FPRat95)
+    styled_df = style_dataframe(display_df)
+    with out:
+        display(HTML(styled_df.to_html()))
+    display(out)
+    display(prepare_algo_black_list())
+    display(prepare_dataset_black_list())
+    export_sheet_row_index_to_comparer()
+    export_sheet_column_index_to_comparer()
+button_AP, button_FPRat95 = prepare_sort_buttons()
