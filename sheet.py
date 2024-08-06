@@ -130,10 +130,10 @@ def update_sheet():
     drop_blackllisted()
     calculate_mean_average()
     display_df = sort_by_average(display_df)
-    styled_display_df = style_df(display_df)
+    styled_df = display_df.style.apply(highlight_min_max, axis= 0)
     with out:
         out.clear_output()
-        display(HTML(styled_display_df.to_html()))
+        display(HTML(styled_df.to_html()))
 # Initial prepare of dataframe
 def prepare_df():
     global df
@@ -171,6 +171,7 @@ def prepare_df():
     df[('Average', 'AP')] = ap_mean
     df[('Average', 'FPRat95')] = fprat95_mean
     display_df = df.copy()
+    display_df = sort_by_average(display_df)
 # Function for preparing toggle buttons (blacklist) for algos
 def prepare_algo_black_list():
     all_algos = indexes
@@ -219,7 +220,7 @@ def initial_display():
     prepare_df()
     button_AP, button_FPRat95 = prepare_sort_buttons()
     display(button_AP,button_FPRat95)
-    styled_df = style_df(display_df)
+    styled_df = display_df.style.apply(highlight_min_max, axis= 0)
     with out:
         display(HTML(styled_df.to_html()))
     display(out)
@@ -227,10 +228,17 @@ def initial_display():
     display(prepare_dataset_black_list())
     export_sheet_row_index_to_comparer()
     export_sheet_column_index_to_comparer()
-def style_df(df):
-    styled_1_df = df.style.highlight_max()
-    # styled_2_df = styled_1_df.style.highlight_min()
-    return styled_1_df
+def highlight_min_max(column):
+    if column.name[1] == 'AP':
+        is_max = column == column.max()
+        is_min = column == column.min()
+        return ['background-color: lightgreen' if max_v else 'background-color: lightcoral' if min_v else '' for max_v, min_v in zip(is_max, is_min)]
+    elif column.name[1] == 'FPRat95':
+        is_min = column == column.min()
+        is_max = column == column.max()
+        return ['background-color: lightgreen' if min_v else 'background-color: lightcoral' if max_v else '' for min_v, max_v in zip(is_min, is_max)]
+    else:
+        return ['' for _ in column]
 def export_sheet_row_index_to_comparer():
     algo_list = df.index
     algo_list = [item for item in algo_list if item not in bl_row]
