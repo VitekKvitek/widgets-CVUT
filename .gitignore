@@ -6,6 +6,8 @@
 settings/
 # folder for storing data
 data/
+# folder for image output 
+output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
