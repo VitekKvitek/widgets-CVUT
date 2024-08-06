@@ -174,5 +174,17 @@ def get_base_folder(selected_folder):
     base_folder_path = 'data/export/datasets/' + selected_folder + '/test/'
     return base_folder_path
 
-
+def process_image(img, gt, use_dataset, thresh, def_gt = None):
+    # Three images
+    contoured_image = drawContours(img, gt, use_dataset, thresh)
+    overlay_50 = drawOverlay(0.5, img, gt, use_dataset, thresh)
+    overlay_100 = drawOverlay(1, img, gt, use_dataset, thresh)
+    
+    if(use_dataset):
+        four_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img), axis=1)
+    else:
+        four_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, gt, def_gt, thresh)), axis=1)
+    
+    
+    return four_imgs
 
