@@ -131,6 +131,14 @@ def update_sheet():
     calculate_mean_average()
     display_df = sort_by_average(display_df)
     styled_df = display_df.style.apply(highlight_min_max, axis= 0)
+    styled_df = styled_df.format(lambda x: "{:.1f}".format(x * 100))
+    column_width = 60  # Fixed width in pixels
+    styled_df = styled_df.set_table_styles(
+    {
+        (col[0], col[1]): [{'selector': 'th, td', 'props': [('width', f'{column_width}px')]}]
+        for col in df.columns
+    }
+)
     with out:
         out.clear_output()
         display(HTML(styled_df.to_html()))
@@ -221,6 +229,14 @@ def initial_display():
     button_AP, button_FPRat95 = prepare_sort_buttons()
     display(button_AP,button_FPRat95)
     styled_df = display_df.style.apply(highlight_min_max, axis= 0)
+    styled_df = styled_df.format(lambda x: "{:.1f}".format(x * 100))
+    column_width = 60  # Fixed width in pixels
+    styled_df = styled_df.set_table_styles(
+    {
+        (col[0], col[1]): [{'selector': 'th, td', 'props': [('width', f'{column_width}px')]}]
+        for col in df.columns
+    }
+)
     with out:
         display(HTML(styled_df.to_html()))
     display(out)
