@@ -1,6 +1,8 @@
 import json
 from os import listdir
 from os.path import isfile, join
+import ipywidgets as widgets
+from IPython.display import display
 # dictionary for all widgets which values are going to be tracked
 widget_dic = {}
 settings_folder = 'settings/'
@@ -51,3 +53,53 @@ def set_load_file_name(change):
 def get_all_files():
     all_files = [f for f in listdir(settings_folder) if isfile(join(settings_folder, f))]
     return all_files
+def prepare_uploader():
+        # File upload widget
+    uploader_widget = widgets.Dropdown(
+        options= get_all_files(),
+        description='Choose preset',
+        disabled=False,
+    )
+    # Adds uploader widget to settigns handler - on save it updates the options it can chose from
+    add_uploader_widget(uploader_widget)
+    uploader_widget.observe(set_load_file_name, names = 'value') # observes change in value of the widget
+    return uploader_widget
+def prepare_save_button():
+    # Create a save button widget
+    save_button = widgets.Button(
+    description ='Save',
+    tooltip ='Click to save data',
+    button_style ='success'  # 'success' (green), 'info' (blue), 'warning' (yellow), 'danger' (red)
+)
+    save_button.on_click(save)
+    return save_button
+def prepare_load_butotn():
+    # Create a load button widget
+    load_button = widgets.Button(
+    description ='Load',
+    tooltip ='Click to load data',
+    button_style ='success'  # 'success' (green), 'info' (blue), 'warning' (yellow), 'danger' (red)
+)
+    load_button.on_click(load)
+    return load_button
+def prepare_file_text():
+    # Cretes a text widget in which is written name of file you want to save current settings
+    file_text_widget = widgets.Text(
+    value='',
+    placeholder='Do not include .json',
+    description='Name preset',
+    disabled=False   
+)
+    file_text_widget.observe(set_save_file_name, names='value')
+    return file_text_widget
+def display_settings():
+    display(uploader_widget,
+            load_button,
+            file_text_widget,
+            save_button
+        )
+
+uploader_widget = prepare_uploader()
+save_button = prepare_save_button()
+file_text_widget = prepare_file_text()
+load_button = prepare_load_butotn()
