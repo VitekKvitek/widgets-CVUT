@@ -269,23 +269,34 @@ def style_dataframe(df, column_width=60, border_style='solid', border_width='2px
             ]
         else:
             return ['' for _ in column]
+    
     # Apply highlighting
     styled_df = df.style.apply(highlight_min_max, axis=0)
+    
     # Format the numbers to be multiplied by 100 and display with one decimal place
     styled_df = styled_df.format(lambda x: "{:.2f}".format(x * 100))
-    # Set fixed column widths and add borders between columns
+    
+    # Define styles for headers and data cells
     styles = {
         (col[0], col[1]): [
-            {'selector': 'th', 'props': [('width', f'{column_width}px'), ('border-right', f'{border_width} {border_style} {border_color}')]}
+            {'selector': 'th', 'props': [
+                ('width', f'{column_width}px'),
+                ('border-right', f'{border_width} {border_style} {border_color}'),
+                ('border-left', f'{border_width} {border_style} {border_color}'),
+                ('text-align', 'center')
+            ]},
+            {'selector': 'td', 'props': [
+                ('border-right', f'{border_width} {border_style} {border_color}'),
+                ('border-left', f'{border_width} {border_style} {border_color}'),
+                ('text-align', 'center')
+            ]}
         ]
         for col in df.columns
     }
-    # Add border styling to data cells
-    for col in df.columns:
-        styles[(col[0], col[1])].append({'selector': 'td', 'props': [('border-right', f'{border_width} {border_style} {border_color}')]})
-    # Set the styles in the Styler
+    
+    # Apply styles to the DataFrame
     styled_df = styled_df.set_table_styles(styles)
-
+    
     return styled_df
 def export_sheet_row_index_to_comparer():
     algo_list = df.index
