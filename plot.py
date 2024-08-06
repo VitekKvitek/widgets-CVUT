@@ -85,6 +85,35 @@ def drawContours(original_image, original_gt, dataset, threshold):
     
     return contours_image
 
+def draw_differance(img, gt, def_gt, thresh):
+    
+    # Mozna ziskat obstacle mask z draw conture/ overlay
+    road_mask, obstacle_mask = create_mask(gt, False, thresh)
+    
+    wrong_color = [255, 0, 0]
+    missed_color = [0, 255, 0]
+
+    mask1 = obstacle_mask
+    mask2 = np.any(def_gt == 0, axis=-1)
+
+    combined_image = np.zeros((mask1.shape[0], mask1.shape[1], 3), dtype=np.uint8)
+
+    # Set colors where booleans are different
+    combined_image[(mask1 & ~mask2)] = wrong_color
+    combined_image[(~mask1 & mask2)] = missed_color
+
+    # Create black mask
+    black_mask = np.all(combined_image == [0, 0, 0], axis=-1)
+
+    grayscale_image = np.dot(img[..., :3], [0.299, 0.587, 0.114])
+    grayscale_image_expanded = np.stack([grayscale_image]*3, axis=-1)
+
+    # Create a copy of the combined image to add the grayscale image
+    result_image = np.copy(combined_image)
+    result_image[black_mask] = grayscale_image_expanded[black_mask]
+
+    return result_image
+
 def get_all_files(folder_path):
     all_files = [f for f in listdir(folder_path) if isfile(join(folder_path, f))]
     return all_files
