@@ -93,10 +93,11 @@ def make_confirmation(*args,**kwargs):
     global data_1
     global data_2
     
-    if algo_1 != None:
+    if algo_1 != None and algo_2 != None:
         data_1 = read_per_f_results (algo_1)
-    if algo_2 != None:
         data_2 = read_per_f_results (algo_2)
+        if selected_img != None and selected_img_dataset != None:
+            update_vals(algo_1, algo_2, selected_img_dataset, selected_img)
     compare_results()
 def update_selected_dataset(change):
     global selected_img_dataset
