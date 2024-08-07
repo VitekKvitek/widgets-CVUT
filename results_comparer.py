@@ -3,11 +3,11 @@ import ipywidgets as widgets
 from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
-from plot import update_vals
 
-algo_0 = None
 
 algo_1 = None
+
+algo_2 = None
 # Per frame data of algo 1 
 data_1 = None
 # Per frame data of algo 2
@@ -43,12 +43,12 @@ def import_sheet_col_index(index_list):
         dataset_selector.value = folder_selector_value
 # Called after alg selection 1
 def load_data_1(change):
-    global algo_0
-    algo_0 = change['new']
-# Called after alg selection 2
-def load_data_2(change):
     global algo_1
     algo_1 = change['new']
+# Called after alg selection 2
+def load_data_2(change):
+    global algo_2
+    algo_2 = change['new']
 # Compares results and sorts them by biggest difference in selected score type
 def compare_results():
     global sorted_keys
@@ -93,10 +93,10 @@ def make_confirmation(*args,**kwargs):
     global data_1
     global data_2
     
-    if algo_0 != None:
-        data_1 = read_per_f_results (algo_0)
     if algo_1 != None:
-        data_2 = read_per_f_results (algo_1)
+        data_1 = read_per_f_results (algo_1)
+    if algo_2 != None:
+        data_2 = read_per_f_results (algo_2)
     compare_results()
 def update_selected_dataset(change):
     global selected_img_dataset
@@ -106,12 +106,9 @@ def update_selected_dataset(change):
 def update_img_selector():
     img_selector.options = sorted_keys[selected_img_dataset]
 # TODO call Jirka
-def select_image(*args,**kwargs):
-    print(algo_0)
-    print(algo_1)
+def select_image():
+    print(select_image)
     print(selected_img_dataset)
-    print(selected_img)
-    update_vals(algo_0, algo_1, selected_img_dataset, selected_img)
 # Displays all widgets needed for comparer to function
 # Prepare dropdowns to select algo
 def prepare_algo_selectors():

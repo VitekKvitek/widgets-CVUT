@@ -340,10 +340,10 @@ output = widgets.Output()
 
 
 
-def update_vals(algo0, algo1, folder, file):
-    vals['selected_algo'][0] = algo0
-    vals['selected_algo'][1] = algo1
-    vals['selected_folder'] = folder
-    vals['selected_file'] = file
+def funkce():
+    vals['selected_algo'][0] = 'nix'
+    vals['selected_algo'][1] = 'nix'
+    vals['selected_folder'] = 'nix'
+    vals['selected_file'] = 'nix'
     show_final(False, 3)
 
