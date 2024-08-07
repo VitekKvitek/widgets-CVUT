@@ -215,7 +215,7 @@ def combine_rows(r1, r2, r3):
     final_image = np.concatenate((r1, r2, r3), axis=0)  
     return final_image
 
-################################ PASTE ########################
+
 
 vals = {
     'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
@@ -317,3 +317,14 @@ def display_image_settings():
             output, 
             save_button)
 output = widgets.Output()
+
+
+
+
+def funkce():
+    vals['selected_algo'][0] = 'nix'
+    vals['selected_algo'][1] = 'nix'
+    vals['selected_folder'] = 'nix'
+    vals['selected_file'] = 'nix'
+    show_final(False, 3)
+
