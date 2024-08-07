@@ -338,8 +338,6 @@ def display_image_settings():
 output = widgets.Output()
 
 
-
-
 def funkce():
     vals['selected_algo'][0] = 'nix'
     vals['selected_algo'][1] = 'nix'
