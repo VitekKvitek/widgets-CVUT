@@ -3,7 +3,7 @@ import ipywidgets as widgets
 from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
-
+from plot import update_vals
 
 algo_1 = None
 
@@ -104,11 +104,17 @@ def update_selected_dataset(change):
     selected_img_dataset = dataset
     update_img_selector()
 def update_img_selector():
-    img_selector.options = sorted_keys[selected_img_dataset]
+    try:
+        img_selector.options = sorted_keys[selected_img_dataset]
+    except:
+        pass
 # TODO call Jirka
-def select_image():
-    print(select_image)
+def select_image(*args,**kwargs):
+    print(algo_1)
+    print(algo_2)
     print(selected_img_dataset)
+    print(selected_img)
+    update_vals(algo_1, algo_2, selected_img_dataset, selected_img)
 # Displays all widgets needed for comparer to function
 # Prepare dropdowns to select algo
 def prepare_algo_selectors():
