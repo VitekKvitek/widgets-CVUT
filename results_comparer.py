@@ -124,7 +124,7 @@ def select_image(*args,**kwargs):
     alg_2_FPRat95 = algo_2_score['FPRat95'] * 100
 
     # Create a readable string with spaces and labels
-    #TODO
+    #TODO pak to jeste dat k tomu dalsimu update_vals
     score_label.value = (
         f"Algorithm 1 AP: {alg_1_AP:.2f}\n"
         f"Algorithm 1 FPR at 95: {alg_1_FPRat95:.2f}\n"
