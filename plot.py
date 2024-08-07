@@ -7,6 +7,13 @@ from os.path import isfile, join
 import matplotlib.pyplot as plt
 
 
+import ipywidgets as widgets
+from IPython.display import display
+from IPython.display import FileLink
+
+from IPython.display import clear_output, display
+
+
 def create_mask(original_gt, dataset, threshold):
     # Create binary masks from normalized values
     if(dataset):
@@ -208,3 +215,105 @@ def combine_rows(r1, r2, r3):
     final_image = np.concatenate((r1, r2, r3), axis=0)  
     return final_image
 
+################################ PASTE ########################
+
+vals = {
+    'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
+    'processed_images': [None, None, None],  # [alg1, alg2, default]
+    'selected_file': '01_Hanns_Klemm_Str_45_000002_000190.png',
+    'selected_folder': 'Fishyscapes_LaF',
+    'selected_algo': ['grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
+                      'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
+    'threshold': [0.8, 0.997] 
+}
+
+
+def make_combined(new_gt, id):
+    # změna slideru = ulozeny #2 (ctyrty obrazek) a default zustanou stejne, nacteni #1 jen metod na kresleni       show_final(False, 0)
+    # změna metody = ulozeny #1 a default zustane stejny, nacteni gt noveho + metody kresleni                       show_final(True, 1)
+    # změna filu = nacteni novych obrazku + gt + metod kresleni u všech obrázků (id 3)                              show_final(True/False, 2)
+    
+    global vals
+
+    # New files for everything
+    if id > 1:
+        selected_file = vals['selected_file']
+        selected_folder = vals['selected_folder']
+
+        vals['images'][0] = load_gt(selected_file, selected_folder, vals['selected_algo'][0], False)
+        vals['images'][1] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], False)
+        vals['images'][2] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], True)
+        vals['images'][3] = load_image(selected_file, selected_folder)
+
+        vals['processed_images'][0] = process_image(vals['images'][3], vals['images'][0], False, vals['threshold'], vals['images'][2])
+        vals['processed_images'][1] = process_image(vals['images'][3], vals['images'][1], False, vals['threshold'], vals['images'][2])
+        vals['processed_images'][2] = process_image(vals['images'][3], vals['images'][2], True, vals['threshold'])
+    
+    # New process / gt + process for selected image 
+    else:
+        # Process image with new gt with ID
+        if new_gt:
+            vals['images'][id] = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][id], False)
+            vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'], vals['images'][2])
+        # Process with old gt with ID 
+        else:
+            vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'], vals['images'][2])
+
+
+def show_final(new_gt, id, fig_size=(16, 12)):
+    make_combined(new_gt, id)
+    final_image = combine_rows(vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1])
+    
+
+    with output:
+        clear_output(wait=True)
+        plt.figure(figsize=fig_size)
+        plt.imshow(final_image)
+        plt.axis('off')
+        plt.title('Contours and Overlays')
+        plt.show()
+
+def update_slider(change, id):    
+    if(id == 0):
+        vals['threshold'] = [road_slider0.value, obstacle_slider0.value]
+    
+    else:
+        vals['threshold'] = [road_slider1.value, obstacle_slider1.value]
+    
+    # Show the image with the updated slider values
+    show_final(False, id)
+
+def prepare_save_image():
+    save_button = widgets.Button(description="Save Image")     
+    save_button.on_click(lambda b:save_image(vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1], b))
+    return save_button
+save_button = prepare_save_image()
+
+def prepare_sliders():
+    road_slider0 = widgets.FloatSlider(value=0.8, min=0.4, max=0.9995, step=0.0001, description='Road Threshold', readout_format='.4f',
+                                  style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+    road_slider0.observe(lambda change:update_slider(change, 0), names='value')
+
+    obstacle_slider0 = widgets.FloatSlider(value=0.997, min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+    obstacle_slider0.observe(lambda change:update_slider(change, 0), names='value')
+
+
+    road_slider1 = widgets.FloatSlider(value=0.8, min=0.4, max=0.9995, step=0.0001, description='Road Threshold', readout_format='.4f',
+                                    style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+    road_slider1.observe(lambda change:update_slider(change, 1), names='value')
+
+    obstacle_slider1 = widgets.FloatSlider(value=0.997, min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+    obstacle_slider1.observe(lambda change:update_slider(change, 1), names='value')
+    return road_slider0, obstacle_slider0, road_slider1, obstacle_slider1
+road_slider0, obstacle_slider0, road_slider1, obstacle_slider1 = prepare_sliders()
+
+def display_image_settings():
+    display(road_slider0, 
+            obstacle_slider0, 
+            road_slider1, 
+            obstacle_slider1, 
+            output, 
+            save_button)
+output = widgets.Output()
