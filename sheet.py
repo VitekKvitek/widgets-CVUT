@@ -272,27 +272,38 @@ def style_dataframe(df, aply_highlight, column_width=60, border_style='solid', b
     """
     
     # Define a function to highlight the max/min values with green and the opposite with red
-    def highlight_min_max(column):
+    def highlight_extremes(column):
+        # Check if column is 'AP' to determine order of highlighting
         if column.name[1] == 'AP':
+            # Find the maximum and second maximum
             is_max = column == column.max()
-            is_min = column == column.min()
+            is_second_max = column == column.nlargest(2).iloc[-1]
+            
+            # Highlight conditions
             return [
-                'background-color: lightgreen' if max_v else 'background-color: lightcoral' if min_v else ''
-                for max_v, min_v in zip(is_max, is_min)
+                'background-color: green' if max_v else
+                'background-color: lightgreen' if second_max_v else ''
+                for max_v, second_max_v in zip(is_max, is_second_max)
             ]
+
         elif column.name[1] == 'FPRat95':
+            # Find the minimum and second minimum
             is_min = column == column.min()
-            is_max = column == column.max()
+            is_second_min = column == column.nsmallest(2).iloc[-1]
+            # Highlight conditions
             return [
-                'background-color: lightgreen' if min_v else 'background-color: lightcoral' if max_v else ''
-                for min_v, max_v in zip(is_min, is_max)
+                'background-color: green' if min_v else
+                'background-color: lightgreen' if second_min_v else ''
+                for min_v, second_min_v in zip(is_min, is_second_min)
             ]
+
         else:
+            # If not 'AP' or 'FPRat95', return empty styles
             return ['' for _ in column]
     
     if aply_highlight:
         # Apply highlighting
-        styled_df = df.style.apply(highlight_min_max, axis=0)
+        styled_df = df.style.apply(highlight_extremes, axis=0)
     else:
         styled_df = df.style
     # Format the numbers to be multiplied by 100 and display with one decimal place

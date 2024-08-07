@@ -340,10 +340,12 @@ def display_image_settings():
 output = widgets.Output()
 
 
-def funkce():
-    vals['selected_algo'][0] = 'nix'
-    vals['selected_algo'][1] = 'nix'
-    vals['selected_folder'] = 'nix'
-    vals['selected_file'] = 'nix'
+
+
+def update_vals(alg0,alg1,folder,dataset):
+    vals['selected_algo'][0] = alg0
+    vals['selected_algo'][1] = alg1
+    vals['selected_folder'] = decontract(folder)
+    vals['selected_file'] = dataset
     show_final(False, 3)
 

@@ -3,7 +3,7 @@ import ipywidgets as widgets
 from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
-
+from plot import update_vals
 
 algo_1 = None
 
@@ -93,10 +93,11 @@ def make_confirmation(*args,**kwargs):
     global data_1
     global data_2
     
-    if algo_1 != None:
+    if algo_1 != None and algo_2 != None:
         data_1 = read_per_f_results (algo_1)
-    if algo_2 != None:
         data_2 = read_per_f_results (algo_2)
+        if selected_img != None and selected_img_dataset != None:
+            update_vals(algo_1, algo_2, selected_img_dataset, selected_img)
     compare_results()
 def update_selected_dataset(change):
     global selected_img_dataset
@@ -104,11 +105,36 @@ def update_selected_dataset(change):
     selected_img_dataset = dataset
     update_img_selector()
 def update_img_selector():
-    img_selector.options = sorted_keys[selected_img_dataset]
+    try:
+        img_selector.options = sorted_keys[selected_img_dataset]
+    except:
+        pass
 # TODO call Jirka
-def select_image():
-    print(select_image)
-    print(selected_img_dataset)
+def select_image(*args,**kwargs):
+    update_vals(algo_1, algo_2, selected_img_dataset, selected_img)
+    #TODO
+    # Get scores for the current image using the provided function
+    algo_1_score, algo_2_score = get_score_for_current_img()
+
+    # Calculate scores for Algorithm 1 and Algorithm 2
+    alg_1_AP = algo_1_score['AP'] * 100
+    alg_1_FPRat95 = algo_1_score['FPRat95'] * 100
+
+    alg_2_AP = algo_2_score['AP'] * 100
+    alg_2_FPRat95 = algo_2_score['FPRat95'] * 100
+
+    # Create a readable string with spaces and labels
+    #TODO pak to jeste dat k tomu dalsimu update_vals
+    score_label.value = (
+        f"Algorithm 1 AP: {alg_1_AP:.2f}\n"
+        f"Algorithm 1 FPR at 95: {alg_1_FPRat95:.2f}\n"
+        f"Algorithm 2 AP: {alg_2_AP:.2f}\n"
+        f"Algorithm 2 FPR at 95: {alg_2_FPRat95:.2f}"
+    )
+
+def get_score_for_current_img():
+    return data_1[selected_img_dataset][selected_img], data_2[selected_img_dataset][selected_img]
+
 # Displays all widgets needed for comparer to function
 # Prepare dropdowns to select algo
 def prepare_algo_selectors():
@@ -160,6 +186,10 @@ def prepare_select_img_button():
     button_select = widgets.Button(description="Select image")
     button_select.on_click(select_image)
     return button_select
+def prepare_label():
+    # Create a Label widget
+    label = widgets.Label(value="Hello, this is a static text using ipywidgets!")
+    return label
 def display_controls():
     hbox_alg_selector = widgets.HBox([algo_selector_1,
                                   algo_selector_2,
@@ -169,10 +199,12 @@ def display_controls():
                                       select_button])
     display(hbox_alg_selector,
             hbox_button,
-            hbox_img_selector)
+            hbox_img_selector,
+            score_label)
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
 confirm_button = prepare_confirm_button()
 dataset_selector = prepare_dataset_selector()
 img_selector = prepare_img_selector()
 select_button = prepare_select_img_button()
+score_label = prepare_label()
