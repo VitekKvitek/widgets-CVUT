@@ -2,7 +2,6 @@
 import os
 import json
 
-
 initial_folder = 'data/export/results'
 algo_json_general_path = 'res/res.json'
 per_f_json_general_path = 'res/per_frame_res.json'
