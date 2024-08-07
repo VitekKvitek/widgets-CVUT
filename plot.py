@@ -13,6 +13,15 @@ from IPython.display import FileLink
 
 from IPython.display import clear_output, display
 
+vals = {
+    'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
+    'processed_images': [None, None, None],  # [alg1, alg2, default]
+    'selected_file': '01_Hanns_Klemm_Str_45_000002_000190.png',
+    'selected_folder': 'Fishyscapes_LaF',
+    'selected_algo': ['grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
+                      'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
+    'threshold': [0.8, 0.997] 
+}
 
 def create_mask(original_gt, dataset, threshold):
     # Create binary masks from normalized values
@@ -147,6 +156,25 @@ def contract(name):
             contraction = None
     return contraction
 
+
+def decontract(name):
+    match name:
+        case "FS":
+            long_name = "Fishyscapes_LaF"
+
+        case 'RA':
+            long_name = "RoadAnomaly"
+
+        case 'RO':
+            long_name = "RoadObstacles"
+        
+        case 'RO21A':
+            long_name = "RoadObstacles21"
+        case _:
+            print("Could not find correct long name")
+            long_name = None
+    return long_name
+
 def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
     # Determine gt path
         
@@ -217,15 +245,6 @@ def combine_rows(r1, r2, r3):
 
 
 
-vals = {
-    'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
-    'processed_images': [None, None, None],  # [alg1, alg2, default]
-    'selected_file': '01_Hanns_Klemm_Str_45_000002_000190.png',
-    'selected_folder': 'Fishyscapes_LaF',
-    'selected_algo': ['grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
-                      'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
-    'threshold': [0.8, 0.997] 
-}
 
 
 def make_combined(new_gt, id):
