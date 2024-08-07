@@ -7,11 +7,8 @@ from IPython.display import display, HTML
 # Custom scripts
 from results_loader import read_all_algo_jsons
 import results_comparer
-# create a dictionary
-# TODO - load part
 
 indexes,col_names,data = read_all_algo_jsons()
-
 
 # Dataframe with all of the data
 df = None# Dataframe version which will be displayed - after black list and sorting
@@ -29,6 +26,7 @@ ascend_FPRat95 = True
 # Stores the column by which it should be ordered
 average_type = 'AP'
 # Sorts the table based on selected criteria
+apply_highlight = True
 def calculate_mean_average():
     global display_df
     ap_columns = display_df.xs('AP', level=1, axis=1)
@@ -50,7 +48,6 @@ def sort_by_average(df, called_by_button = False):
     global ascend_FPRat95
     global average_type
     # Determine the column to sort by
-    
     if average_type == 'AP':
         average_column = [('Average', 'AP')]
         ascend = ascend_AP
@@ -61,7 +58,6 @@ def sort_by_average(df, called_by_button = False):
         ascend = ascend_FPRat95
         if called_by_button:
             ascend_FPRat95 = not ascend_FPRat95
-    
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
     return sorted_df
@@ -143,13 +139,24 @@ def on_button_toggle_ds_bl(change):
         bl_col.remove(button_description)
     export_sheet_column_index_to_comparer()
     update_sheet()
+def toggle_highlight(change):
+    global apply_highlight
+    toggled = change['new']
+    button = change['owner']
+    if toggled:
+        button.button_style = 'danger'
+        apply_highlight = False
+    else:
+        button.button_style = 'success'
+        apply_highlight = True
+    update_sheet()
 # Functin which updates the showed (displayed) table
 def update_sheet():
     global display_df
     drop_blackllisted()
     calculate_mean_average()
     display_df = sort_by_average(display_df)
-    styled_df = style_dataframe(display_df)
+    styled_df = style_dataframe(display_df,apply_highlight)
     with out:
         out.clear_output()
         display(HTML(styled_df.to_html()))
@@ -201,7 +208,7 @@ def prepare_algo_black_list():
                                 description= algo,
                                 disabled=False,
                                 button_style='success', # 'success', 'info', 'warning', 'danger' or ''
-                                tooltip='Description',
+                                tooltip='Toggle algo',
                                 icon='check' # (FontAwesome names without the `fa-` prefix)
                             )
         new_toggle_button.observe(on_button_toggle_alg_bl, names='value')
@@ -219,7 +226,7 @@ def prepare_dataset_black_list():
                                 description= dataset,
                                 disabled=False,
                                 button_style='info', # 'success', 'info', 'warning', 'danger' or ''
-                                tooltip='Description',
+                                tooltip='Toggle dataset',
                                 icon='check' # (FontAwesome names without the `fa-` prefix)
                             )
         new_toggle_button.observe(on_button_toggle_ds_bl, names='value')
@@ -234,8 +241,13 @@ def prepare_sort_buttons():
     button_FPRat95 = widgets.Button(description="Sort by FPRat95")
     button_FPRat95.on_click(sort_button_on_click)
     return button_AP, button_FPRat95
+def prepare_highlight_button():
+    highlight_button = widgets.ToggleButton(description="Highlight",
+                                            button_style= "success")
+    highlight_button.observe(toggle_highlight, names='value')
+    return highlight_button
 # Styling function
-def style_dataframe(df, column_width=60, border_style='solid', border_width='2px', border_color='black'):
+def style_dataframe(df, aply_highlight, column_width=60, border_style='solid', border_width='2px', border_color='black'):
     """
     Styles the DataFrame by highlighting min and max values, formatting numbers,
     setting fixed column widths, and drawing lines between columns.
@@ -243,6 +255,8 @@ def style_dataframe(df, column_width=60, border_style='solid', border_width='2px
     Parameters:
     - df: pd.DataFrame
         The DataFrame with multi-index columns to be styled.
+    -aply_highlight: bool
+        Bool if the highlight should be aplied
     - column_width: int
         The fixed width of each column in pixels.
     - border_style: str
@@ -276,12 +290,13 @@ def style_dataframe(df, column_width=60, border_style='solid', border_width='2px
         else:
             return ['' for _ in column]
     
-    # Apply highlighting
-    styled_df = df.style.apply(highlight_min_max, axis=0)
-    
+    if aply_highlight:
+        # Apply highlighting
+        styled_df = df.style.apply(highlight_min_max, axis=0)
+    else:
+        styled_df = df.style
     # Format the numbers to be multiplied by 100 and display with one decimal place
     styled_df = styled_df.format(lambda x: "{:.2f}".format(x * 100))
-    
     # Define styles for headers and data cells
     styles = {
         (col[0], col[1]): [
@@ -299,7 +314,6 @@ def style_dataframe(df, column_width=60, border_style='solid', border_width='2px
         ]
         for col in df.columns
     }
-    
     # Apply styles to the DataFrame
     styled_df = styled_df.set_table_styles(styles)
     
@@ -318,7 +332,8 @@ def export_sheet_column_index_to_comparer():
 def initial_display():
     prepare_df()
     display(button_AP,button_FPRat95)
-    styled_df = style_dataframe(display_df)
+    display(highlight_button)
+    styled_df = style_dataframe(display_df, apply_highlight)
     with out:
         display(HTML(styled_df.to_html()))
     display(out)
@@ -327,3 +342,4 @@ def initial_display():
     export_sheet_row_index_to_comparer()
     export_sheet_column_index_to_comparer()
 button_AP, button_FPRat95 = prepare_sort_buttons()
+highlight_button = prepare_highlight_button()
