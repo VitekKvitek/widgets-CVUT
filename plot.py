@@ -3,15 +3,12 @@ import numpy as np
 import os
 from os import listdir, path
 from os.path import isfile, join
-
 import matplotlib.pyplot as plt
-
-
 import ipywidgets as widgets
 from IPython.display import display
-from IPython.display import FileLink
-
 from IPython.display import clear_output, display
+
+
 
 vals = {
     'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
@@ -223,7 +220,7 @@ def process_image(img, gt, use_dataset, thresh, def_gt = None):
     
     return four_imgs
 
-def save_image(r1, r2, r3, b):
+def save_image(b):
     # Create 'output' directory if it doesn't exist
     output_dir = 'output'
     if not os.path.exists(output_dir):
@@ -232,15 +229,15 @@ def save_image(r1, r2, r3, b):
     # Define the filename with the 'output' directory
     filename = os.path.join(output_dir, 'combined_image.png')
     
-    final_rgb = combine_rows(r1, r2, r3)[:, :, [2, 1, 0]]
+    final_rgb = combine_rows()[:, :, [2, 1, 0]]
     
     cv.imwrite(filename, final_rgb)
     
     #TODO display properly
     #display(FileLink(filename))
 
-def combine_rows(r1, r2, r3):
-    final_image = np.concatenate((r1, r2, r3), axis=0)  
+def combine_rows():
+    final_image = np.concatenate((vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1]), axis=0)  
     return final_image
 
 
@@ -281,8 +278,15 @@ def make_combined(new_gt, id):
 
 def show_final(new_gt, id, fig_size=(16, 12)):
     make_combined(new_gt, id)
-    final_image = combine_rows(vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1])
     
+    """
+    plt.imshow(vals['processed_images'][1])
+    plt.title("1")
+    plt.axis('off')
+    plt.show()
+
+    """
+    final_image = combine_rows()
 
     with output:
         clear_output(wait=True)
@@ -292,39 +296,37 @@ def show_final(new_gt, id, fig_size=(16, 12)):
         plt.title('Contours and Overlays')
         plt.show()
 
-def update_slider(change, id):    
-    if(id == 0):
+def update_slider(change, id):
+    if id == 0:
         vals['threshold'] = [road_slider0.value, obstacle_slider0.value]
-    
     else:
         vals['threshold'] = [road_slider1.value, obstacle_slider1.value]
-    
-    # Show the image with the updated slider values
+
     show_final(False, id)
 
 def prepare_save_image():
     save_button = widgets.Button(description="Save Image")     
-    save_button.on_click(lambda b:save_image(vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1], b))
+    save_button.on_click(lambda b:save_image(b))
     return save_button
 save_button = prepare_save_image()
 
 def prepare_sliders():
     road_slider0 = widgets.FloatSlider(value=0.8, min=0.4, max=0.9995, step=0.0001, description='Road Threshold', readout_format='.4f',
-                                  style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
-    road_slider0.observe(lambda change:update_slider(change, 0), names='value')
+                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+    road_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
     obstacle_slider0 = widgets.FloatSlider(value=0.997, min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
-                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
-    obstacle_slider0.observe(lambda change:update_slider(change, 0), names='value')
-
+                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+    obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
     road_slider1 = widgets.FloatSlider(value=0.8, min=0.4, max=0.9995, step=0.0001, description='Road Threshold', readout_format='.4f',
-                                    style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
-    road_slider1.observe(lambda change:update_slider(change, 1), names='value')
+                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+    road_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
     obstacle_slider1 = widgets.FloatSlider(value=0.997, min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
-                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
-    obstacle_slider1.observe(lambda change:update_slider(change, 1), names='value')
+                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+    obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
+
     return road_slider0, obstacle_slider0, road_slider1, obstacle_slider1
 road_slider0, obstacle_slider0, road_slider1, obstacle_slider1 = prepare_sliders()
 
