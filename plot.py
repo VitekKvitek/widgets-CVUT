@@ -332,7 +332,7 @@ def prepare_sliders():
                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     road_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
-    obstacle_slider0 = widgets.FloatSlider(value=thresh[0][1], min=1, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+    obstacle_slider0 = widgets.FloatSlider(value=thresh[0][1], min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
