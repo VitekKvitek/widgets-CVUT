@@ -326,19 +326,21 @@ def update_slider(change, id):
 
 
 def prepare_sliders():
-    road_slider0 = widgets.FloatSlider(value=0.8, min=0, max=0.9, step=0.0001, description='Road Threshold', readout_format='.4f',
+    thresh = vals['threshold']
+
+    road_slider0 = widgets.FloatSlider(value=thresh[0][0], min=0, max=0.9, step=0.0001, description='Road Threshold', readout_format='.4f',
                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     road_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
-    obstacle_slider0 = widgets.FloatSlider(value=0.95, min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+    obstacle_slider0 = widgets.FloatSlider(value=thresh[0][1], min=1, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
-    road_slider1 = widgets.FloatSlider(value=0.8, min=0, max=1, step=0.0001, description='Road Threshold', readout_format='.4f',
+    road_slider1 = widgets.FloatSlider(value=thresh[1][0], min=0, max=0.9, step=0.0001, description='Road Threshold', readout_format='.4f',
                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     road_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
-    obstacle_slider1 = widgets.FloatSlider(value=0.95, min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+    obstacle_slider1 = widgets.FloatSlider(value=thresh[1][1], min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
