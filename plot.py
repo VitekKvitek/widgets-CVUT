@@ -234,7 +234,12 @@ def save_image(b):
     output_dir = 'output'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    unique_name = 'Img.png'
+    
+
+
+    base_filename = os.path.splitext(vals["selected_file"])[0]
+    
+    unique_name = f'{contract(vals['selected_folder'])}-{base_filename}-{vals['selected_algo'][0][-15:]}-{vals['selected_algo'][0][-15:]}.png'
 
     # Define the filename with the 'output' directory
     filename = os.path.join(output_dir, unique_name)
