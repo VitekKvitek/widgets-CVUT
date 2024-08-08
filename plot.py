@@ -8,7 +8,10 @@ import ipywidgets as widgets
 from IPython.display import display
 from IPython.display import clear_output, display
 
-
+import time
+from IPython.display import display
+from traitlets import TraitError
+from threading import Timer
 
 vals = {
     'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
@@ -275,19 +278,14 @@ def make_combined(new_gt, id):
         else:
             vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'], vals['images'][2])
 
+output = widgets.Output()
 
 def show_final(new_gt, id, fig_size=(16, 12)):
     make_combined(new_gt, id)
+    print("finally final", new_gt, id, vals['threshold'])
     
-    """
-    plt.imshow(vals['processed_images'][1])
-    plt.title("1")
-    plt.axis('off')
-    plt.show()
-
-    """
     final_image = combine_rows()
-
+    
     with output:
         clear_output(wait=True)
         plt.figure(figsize=fig_size)
@@ -295,20 +293,35 @@ def show_final(new_gt, id, fig_size=(16, 12)):
         plt.axis('off')
         plt.title('Contours and Overlays')
         plt.show()
+    print("idk", vals['threshold'])
+
+
+# Dictionary to hold the timers for debouncing
+debounce_timers = {}
+
+def debounced_update_slider(change, id, debounce_time=0.5):
+    print("debounced")
+    global debounce_timers
+
+    # Cancel any existing timer for this id
+    if id in debounce_timers:
+        debounce_timers[id].cancel()
+
+    # Create a new timer
+    debounce_timers[id] = Timer(debounce_time, update_slider, [change, id])
+    debounce_timers[id].start()
 
 def update_slider(change, id):
+    print("slider update")
+    
     if id == 0:
         vals['threshold'] = [road_slider0.value, obstacle_slider0.value]
     else:
         vals['threshold'] = [road_slider1.value, obstacle_slider1.value]
 
+    # Show the image with the updated slider values
     show_final(False, id)
 
-def prepare_save_image():
-    save_button = widgets.Button(description="Save Image")     
-    save_button.on_click(lambda b:save_image(b))
-    return save_button
-save_button = prepare_save_image()
 
 def prepare_sliders():
     road_slider0 = widgets.FloatSlider(value=0.8, min=0.4, max=0.9995, step=0.0001, description='Road Threshold', readout_format='.4f',
@@ -330,14 +343,20 @@ def prepare_sliders():
     return road_slider0, obstacle_slider0, road_slider1, obstacle_slider1
 road_slider0, obstacle_slider0, road_slider1, obstacle_slider1 = prepare_sliders()
 
+def prepare_save_image():
+    save_button = widgets.Button(description="Save Image")     
+    save_button.on_click(lambda b:save_image(b))
+    return save_button
+save_button = prepare_save_image()
+
 def display_image_settings():
     display(road_slider0, 
             obstacle_slider0, 
             road_slider1, 
             obstacle_slider1, 
-            output, 
+            output,
             save_button)
-output = widgets.Output()
+
 
 
 
