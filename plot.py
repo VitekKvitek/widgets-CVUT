@@ -8,8 +8,9 @@ import ipywidgets as widgets
 from IPython.display import display
 from IPython.display import clear_output, display
 
+
 import time
-from IPython.display import display
+from IPython.display import FileLink, display
 from traitlets import TraitError
 from threading import Timer
 
@@ -190,6 +191,11 @@ def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
     # Load ground truth
     original_gt = cv.imread(original_gt_path) if use_dataset else np.load(original_gt_path)
     assert original_gt is not None, f"original_gt could not be read from {original_gt_path}"
+
+     # Normalize the score if not using the dataset (i.e., the score is loaded)
+    if not use_dataset:
+        original_gt = normalize_score(original_gt)
+
     return original_gt
 
 def load_image(selected_file, selected_folder):
@@ -236,8 +242,8 @@ def save_image(b):
     
     cv.imwrite(filename, final_rgb)
     
-    #TODO display properly
-    #display(FileLink(filename))
+    with output:
+        display(FileLink(filename))
 
 def combine_rows():
     final_image = np.concatenate((vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1]), axis=0)  
@@ -282,7 +288,6 @@ output = widgets.Output()
 
 def show_final(new_gt, id, fig_size=(16, 12)):
     make_combined(new_gt, id)
-    print("finally final", new_gt, id, vals['threshold'])
     
     final_image = combine_rows()
     
@@ -293,14 +298,14 @@ def show_final(new_gt, id, fig_size=(16, 12)):
         plt.axis('off')
         plt.title('Contours and Overlays')
         plt.show()
-    print("idk", vals['threshold'])
+    
 
 
 # Dictionary to hold the timers for debouncing
 debounce_timers = {}
 
 def debounced_update_slider(change, id, debounce_time=0.5):
-    print("debounced")
+    #print("debounced")
     global debounce_timers
 
     # Cancel any existing timer for this id
@@ -312,7 +317,7 @@ def debounced_update_slider(change, id, debounce_time=0.5):
     debounce_timers[id].start()
 
 def update_slider(change, id):
-    print("slider update")
+    #print("slider update")
     
     if id == 0:
         vals['threshold'] = [road_slider0.value, obstacle_slider0.value]
@@ -324,19 +329,19 @@ def update_slider(change, id):
 
 
 def prepare_sliders():
-    road_slider0 = widgets.FloatSlider(value=0.8, min=0.4, max=0.9995, step=0.0001, description='Road Threshold', readout_format='.4f',
+    road_slider0 = widgets.FloatSlider(value=0.8, min=0, max=0.9, step=0.0001, description='Road Threshold', readout_format='.4f',
                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     road_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
-    obstacle_slider0 = widgets.FloatSlider(value=0.997, min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+    obstacle_slider0 = widgets.FloatSlider(value=0.95, min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
-    road_slider1 = widgets.FloatSlider(value=0.8, min=0.4, max=0.9995, step=0.0001, description='Road Threshold', readout_format='.4f',
+    road_slider1 = widgets.FloatSlider(value=0.8, min=0, max=1, step=0.0001, description='Road Threshold', readout_format='.4f',
                                        style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     road_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
-    obstacle_slider1 = widgets.FloatSlider(value=0.997, min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+    obstacle_slider1 = widgets.FloatSlider(value=0.95, min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
     obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
@@ -358,9 +363,6 @@ def display_image_settings():
             save_button)
 
 
-
-
-
 def update_vals(alg0,alg1,folder,dataset):
     vals['selected_algo'][0] = alg0
     vals['selected_algo'][1] = alg1
@@ -368,3 +370,17 @@ def update_vals(alg0,alg1,folder,dataset):
     vals['selected_file'] = dataset
     show_final(False, 3)
 
+
+
+def normalize_score(score, norm_scale=0.2, norm_thr=0.9):
+    # Create masks for ID and OOD
+    mask_id = score <= norm_thr
+    mask_ood = score > norm_thr
+    
+    # Apply normalization for ID scores
+    score[mask_id] = norm_scale * (score[mask_id] / norm_thr)
+    
+    # Apply normalization for OOD scores
+    score[mask_ood] = norm_scale + (1.0 - norm_scale) * ((score[mask_ood] - norm_thr) / (1.0 - norm_thr))
+    
+    return score
