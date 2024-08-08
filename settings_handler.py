@@ -25,6 +25,7 @@ def get_widget_values():
     return values_dic
 # Called by save button
 def save(*args,**kwargs):
+    print('start save')
     # Dump the list of values to file
     values_dic = get_widget_values()
     with open(settings_folder + will_save_file_name+'.json', 'w') as file:
