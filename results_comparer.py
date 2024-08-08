@@ -125,11 +125,12 @@ def select_image(*args,**kwargs):
 
     # Create a readable string with spaces and labels
     #TODO pak to jeste dat k tomu dalsimu update_vals
-    score_label.value = (
-        f"Algorithm 1 AP: {alg_1_AP:.2f}\n"
-        f"Algorithm 1 FPR at 95: {alg_1_FPRat95:.2f}\n"
-        f"Algorithm 2 AP: {alg_2_AP:.2f}\n"
-        f"Algorithm 2 FPR at 95: {alg_2_FPRat95:.2f}"
+    algo_1_label.value = (
+        f"Algo 1 AP: {alg_1_AP:.2f} ,  FPRat95: {alg_1_FPRat95:.2f}"
+    )
+    algo_1_label.layout = widgets.Layout(margin='0 140px 0 0')  # Add right margin for spacing
+    algo_2_label.value = (
+        f"Algo 2 AP: {alg_2_AP:.2f} ,  FPRat95: {alg_2_FPRat95:.2f}"
     )
 
 def get_score_for_current_img():
@@ -186,10 +187,11 @@ def prepare_select_img_button():
     button_select = widgets.Button(description="Select image")
     button_select.on_click(select_image)
     return button_select
-def prepare_label():
+def prepare_labels():
     # Create a Label widget
-    label = widgets.Label(value="Hello, this is a static text using ipywidgets!")
-    return label
+    algo_1_label = widgets.Label(value = " ")
+    algo_2_label = widgets.Label(value = " ")
+    return algo_1_label, algo_2_label
 def display_controls():
     hbox_alg_selector = widgets.HBox([algo_selector_1,
                                   algo_selector_2,
@@ -197,14 +199,15 @@ def display_controls():
     hbox_img_selector = widgets.HBox([dataset_selector,
                                       img_selector,
                                       select_button])
+    hbox_labels = widgets.HBox([algo_1_label, algo_2_label])
     display(hbox_alg_selector,
+            hbox_labels,
             hbox_button,
-            hbox_img_selector,
-            score_label)
+            hbox_img_selector)
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
 confirm_button = prepare_confirm_button()
 dataset_selector = prepare_dataset_selector()
 img_selector = prepare_img_selector()
 select_button = prepare_select_img_button()
-score_label = prepare_label()
+algo_1_label, algo_2_label = prepare_labels()
