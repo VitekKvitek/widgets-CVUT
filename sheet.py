@@ -342,8 +342,8 @@ def export_sheet_column_index_to_comparer():
 # Function to display everything
 def initial_display():
     prepare_df()
-    display(button_AP,button_FPRat95)
-    display(highlight_button)
+    hbox_button = widgets.HBox([button_AP, button_FPRat95, highlight_button])
+    display(hbox_button)
     styled_df = style_dataframe(display_df, apply_highlight)
     with out:
         display(HTML(styled_df.to_html()))
