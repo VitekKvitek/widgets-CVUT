@@ -128,10 +128,25 @@ def select_image(*args,**kwargs):
     algo_1_label.value = (
         f"Algo 1 AP: {alg_1_AP:.2f} ,  FPRat95: {alg_1_FPRat95:.2f}"
     )
-    algo_1_label.layout = widgets.Layout(margin='0 140px 0 0')  # Add right margin for spacing
+    # Apply layout styling
+    algo_1_label.layout = widgets.Layout(
+        width='auto', 
+        height='30px', 
+        margin='0px 60px 0px 90px', 
+        padding='5px',
+        border='solid 1px black'
+    )   
     algo_2_label.value = (
         f"Algo 2 AP: {alg_2_AP:.2f} ,  FPRat95: {alg_2_FPRat95:.2f}"
     )
+    # Apply layout styling
+    algo_2_label.layout = widgets.Layout(
+        width='auto', 
+        height='30px', 
+        margin='0px 40px 0px 45px', 
+        padding='5px',
+        border='solid 1px black'
+    )   
 
 def get_score_for_current_img():
     return data_1[selected_img_dataset][selected_img], data_2[selected_img_dataset][selected_img]
