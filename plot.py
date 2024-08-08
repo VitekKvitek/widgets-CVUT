@@ -21,7 +21,7 @@ vals = {
     'selected_folder': 'Fishyscapes_LaF',
     'selected_algo': ['grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
                       'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
-    'threshold': [0.8, 0.997] 
+    'threshold': [[0.4, 0.9], [0.4, 0.9]]
 }
 
 def create_mask(original_gt, dataset, threshold):
@@ -36,7 +36,7 @@ def create_mask(original_gt, dataset, threshold):
     return road_mask, obstacle_mask
 
 
-def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
+def draw_overlay(opacity, original_image, original_gt, dataset, threshold):
     #print(threshold)
     obstacle_clr = [255,0,0]  # Red obstacles
     road_clr = [128,64,128]   # Purple road
@@ -68,7 +68,7 @@ def drawOverlay(opacity, original_image, original_gt, dataset, threshold):
 
     return combined_image
 
-def drawContours(original_image, original_gt, dataset, threshold):
+def draw_contours(original_image, original_gt, dataset, threshold):
     
     #if BUG debuging
     #plt.imshow(original_gt)
@@ -217,9 +217,9 @@ def get_base_folder(selected_folder):
 
 def process_image(img, gt, use_dataset, thresh, def_gt = None):
     # Three images
-    contoured_image = drawContours(img, gt, use_dataset, thresh)
-    overlay_50 = drawOverlay(0.5, img, gt, use_dataset, thresh)
-    overlay_100 = drawOverlay(1, img, gt, use_dataset, thresh)
+    contoured_image = draw_contours(img, gt, use_dataset, thresh)
+    overlay_50 = draw_overlay(0.5, img, gt, use_dataset, thresh)
+    overlay_100 = draw_overlay(1, img, gt, use_dataset, thresh)
     
     if(use_dataset):
         four_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img), axis=1)
@@ -234,10 +234,11 @@ def save_image(b):
     output_dir = 'output'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    unique_name = 'Img.png'
 
     # Define the filename with the 'output' directory
-    filename = os.path.join(output_dir, 'combined_image.png')
-    
+    filename = os.path.join(output_dir, unique_name)
+    print(filename)
     final_rgb = combine_rows()[:, :, [2, 1, 0]]
     
     cv.imwrite(filename, final_rgb)
@@ -248,10 +249,6 @@ def save_image(b):
 def combine_rows():
     final_image = np.concatenate((vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1]), axis=0)  
     return final_image
-
-
-
-
 
 def make_combined(new_gt, id):
     # změna slideru = ulozeny #2 (ctyrty obrazek) a default zustanou stejne, nacteni #1 jen metod na kresleni       show_final(False, 0)
@@ -270,19 +267,19 @@ def make_combined(new_gt, id):
         vals['images'][2] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], True)
         vals['images'][3] = load_image(selected_file, selected_folder)
 
-        vals['processed_images'][0] = process_image(vals['images'][3], vals['images'][0], False, vals['threshold'], vals['images'][2])
-        vals['processed_images'][1] = process_image(vals['images'][3], vals['images'][1], False, vals['threshold'], vals['images'][2])
-        vals['processed_images'][2] = process_image(vals['images'][3], vals['images'][2], True, vals['threshold'])
+        vals['processed_images'][0] = process_image(vals['images'][3], vals['images'][0], False, vals['threshold'][0], vals['images'][2])
+        vals['processed_images'][1] = process_image(vals['images'][3], vals['images'][1], False, vals['threshold'][1], vals['images'][2])
+        vals['processed_images'][2] = process_image(vals['images'][3], vals['images'][2], True, vals['threshold'][0])
     
     # New process / gt + process for selected image 
     else:
         # Process image with new gt with ID
         if new_gt:
             vals['images'][id] = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][id], False)
-            vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'], vals['images'][2])
+            vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'][id], vals['images'][2])
         # Process with old gt with ID 
         else:
-            vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'], vals['images'][2])
+            vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'][id], vals['images'][2])
 
 output = widgets.Output()
 
@@ -320,9 +317,9 @@ def update_slider(change, id):
     #print("slider update")
     
     if id == 0:
-        vals['threshold'] = [road_slider0.value, obstacle_slider0.value]
+        vals['threshold'][0] = [road_slider0.value, obstacle_slider0.value]
     else:
-        vals['threshold'] = [road_slider1.value, obstacle_slider1.value]
+        vals['threshold'][1] = [road_slider1.value, obstacle_slider1.value]
 
     # Show the image with the updated slider values
     show_final(False, id)
