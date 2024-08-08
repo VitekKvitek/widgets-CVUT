@@ -5,14 +5,14 @@ from os import listdir, path
 from os.path import isfile, join
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
-from IPython.display import display
-from IPython.display import clear_output, display
-
-
-import time
-from IPython.display import FileLink, display
-from traitlets import TraitError
+from IPython.display import clear_output, display, FileLink
 from threading import Timer
+
+import ipywidgets as widgets
+from IPython.display import display
+import time
+import threading
+
 
 vals = {
     'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
@@ -243,7 +243,7 @@ def save_image(b):
 
     # Define the filename with the 'output' directory
     filename = os.path.join(output_dir, unique_name)
-    print(filename)
+    
     final_rgb = combine_rows()[:, :, [2, 1, 0]]
     
     cv.imwrite(filename, final_rgb)
@@ -292,14 +292,17 @@ def show_final(new_gt, id, fig_size=(16, 12)):
     make_combined(new_gt, id)
     
     final_image = combine_rows()
+
+
     
     with output:
-        clear_output(wait=True)
-        plt.figure(figsize=fig_size)
-        plt.imshow(final_image)
-        plt.axis('off')
-        plt.title('Contours and Overlays')
-        plt.show()
+        clear_output(wait=False)
+        if(id > 1):
+            plt.figure(figsize=fig_size)
+            plt.imshow(final_image)
+            plt.axis('off')
+            plt.title('Contours and Overlays')
+            plt.show()
     
 
 
@@ -347,7 +350,7 @@ def prepare_sliders():
 
     obstacle_slider1 = widgets.FloatSlider(value=thresh[1][1], min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
-    obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
+    obstacle_slider1.observe(lambda change: debounced_update_slider(change, 1), names='value')
 
     return road_slider0, obstacle_slider0, road_slider1, obstacle_slider1
 road_slider0, obstacle_slider0, road_slider1, obstacle_slider1 = prepare_sliders()
