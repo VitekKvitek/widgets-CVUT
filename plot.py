@@ -21,7 +21,7 @@ vals = {
     'selected_folder': 'Fishyscapes_LaF',
     'selected_algo': ['grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
                       'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
-    'threshold': [[0.4, 0.9], [0.4, 0.9]]
+    'threshold': [[0.4, 0.997], [0.4, 0.997]]
 }
 
 def create_mask(original_gt, dataset, threshold):
@@ -220,7 +220,7 @@ def process_image(img, gt, use_dataset, thresh, def_gt = None):
     if(use_dataset):
         five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img, np.full_like(gt, 255)), axis=1)
     else:
-        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, gt, def_gt, thresh), normalize_score(gt)), axis=1)
+        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, gt, def_gt, thresh), normalize_score()), axis=1)
     
     return five_imgs
 
@@ -344,7 +344,9 @@ def update_vals(alg0,alg1,folder,dataset):
     show_final(3)
 
 
-def normalize_score(score, norm_scale=0.2, norm_thr=0.9):
+def normalize_score(norm_scale=0.2, norm_thr=0.9):
+    score = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][0], False)
+    
     # Create masks for ID and OOD
     mask_id = score <= norm_thr
     mask_ood = score > norm_thr
