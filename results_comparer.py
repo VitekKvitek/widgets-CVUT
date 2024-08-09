@@ -188,7 +188,7 @@ def prepare_img_selector():
         disabled=False,
     )
     img_selector.observe(set_selected_img, names='value')
-    add(img_selector, 'img_selector')
+    # add(img_selector, 'img_selector')
     return img_selector
 def prepare_dataset_selector():
     dataset_selector = widgets.Dropdown(
@@ -211,8 +211,8 @@ def prepare_labels():
     # Create a Label widget
     algo_1_label = widgets.Label(value = " ")
     algo_2_label = widgets.Label(value = " ")
-    add(algo_1_label, 'algo_1_label')
-    add(algo_2_label, 'algo_2_label')
+    # add(algo_1_label, 'algo_1_label')
+    # add(algo_2_label, 'algo_2_label')
     return algo_1_label, algo_2_label
 def display_controls():
     hbox_alg_selector = widgets.HBox([algo_selector_1,
