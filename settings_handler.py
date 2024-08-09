@@ -1,6 +1,6 @@
 import json
-from os import listdir
-from os.path import isfile, join
+from os import listdir,makedirs
+from os.path import isfile, join, exists
 import ipywidgets as widgets
 from IPython.display import display
 # dictionary for all widgets which values are going to be tracked
@@ -52,6 +52,11 @@ def set_load_file_name(change):
     global will_load_file_name
     will_load_file_name = change['new']
 def get_all_files():
+    settings_folder = 'settings'  # Define the folder name
+    # Check if the folder exists, and create it if it doesn't
+    if not exists(settings_folder):
+        makedirs(settings_folder)
+    # List all files in the folder
     all_files = [f for f in listdir(settings_folder) if isfile(join(settings_folder, f))]
     return all_files
 def prepare_uploader():
