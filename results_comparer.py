@@ -4,6 +4,7 @@ from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
 from plot import update_vals
+from settings_handler import add
 
 algo_1 = None
 
@@ -126,7 +127,7 @@ def select_image(*args,**kwargs):
     # Create a readable string with spaces and labels
     #TODO pak to jeste dat k tomu dalsimu update_vals
     algo_1_label.value = (
-        f"Algo 1 AP: {alg_1_AP:.2f} ,  FPRat95: {alg_1_FPRat95:.2f}"
+        f" AP: {alg_1_AP:.2f} , FPRat95: {alg_1_FPRat95:.2f}"
     )
     # Apply layout styling
     algo_1_label.layout = widgets.Layout(
@@ -137,13 +138,13 @@ def select_image(*args,**kwargs):
         border='solid 1px black'
     )   
     algo_2_label.value = (
-        f"Algo 2 AP: {alg_2_AP:.2f} ,  FPRat95: {alg_2_FPRat95:.2f}"
+        f"AP: {alg_2_AP:.2f} , FPRat95: {alg_2_FPRat95:.2f}"
     )
     # Apply layout styling
     algo_2_label.layout = widgets.Layout(
         width='auto', 
         height='30px', 
-        margin='0px 40px 0px 45px', 
+        margin='0px 40px 0px 80px', 
         padding='5px',
         border='solid 1px black'
     )   
@@ -160,12 +161,14 @@ def prepare_algo_selectors():
         disabled=False,
     )
     algo_selector_1.observe(load_data_1, names='value')
+    add(algo_selector_1, ' algo_selector_1')
     algo_selector_2 = widgets.Dropdown(
         options=[],
         description='Algo 2:',
         disabled=False,
     )
     algo_selector_2.observe(load_data_2, names='value')
+    add(algo_selector_2, 'algo_selector_2')
     return algo_selector_1, algo_selector_2
 # Prepares buttons to choose diffrence type by which will be the images sorted
 def prepare_difference_type_buttons():    
@@ -174,7 +177,7 @@ def prepare_difference_type_buttons():
     button_AP.button_style = 'info'
     button_FPRat95 = widgets.Button(description="Difference by FPRat95")
     button_FPRat95.on_click(set_difference_type)
-    button_list = [button_AP,button_FPRat95]
+    button_list = [button_AP, button_FPRat95]
     hbox_button = widgets.HBox(button_list)
     return hbox_button
 # Prepares dropdown widgets which lists all available images for each dataset
@@ -185,6 +188,7 @@ def prepare_img_selector():
         disabled=False,
     )
     img_selector.observe(set_selected_img, names='value')
+    # add(img_selector, 'img_selector')
     return img_selector
 def prepare_dataset_selector():
     dataset_selector = widgets.Dropdown(
@@ -193,6 +197,7 @@ def prepare_dataset_selector():
         disabled = False
     )
     dataset_selector.observe(update_selected_dataset, names='value')
+    add(dataset_selector, 'data_selector')
     return dataset_selector
 def prepare_confirm_button():
     confirm_button = widgets.Button(description="Confirm algs")
@@ -206,6 +211,8 @@ def prepare_labels():
     # Create a Label widget
     algo_1_label = widgets.Label(value = " ")
     algo_2_label = widgets.Label(value = " ")
+    # add(algo_1_label, 'algo_1_label')
+    # add(algo_2_label, 'algo_2_label')
     return algo_1_label, algo_2_label
 def display_controls():
     hbox_alg_selector = widgets.HBox([algo_selector_1,
@@ -215,10 +222,10 @@ def display_controls():
                                       img_selector,
                                       select_button])
     hbox_labels = widgets.HBox([algo_1_label, algo_2_label])
-    display(hbox_alg_selector,
-            hbox_labels,
-            hbox_button,
-            hbox_img_selector)
+    display(hbox_button,
+            hbox_img_selector,
+            hbox_alg_selector,
+            hbox_labels)
 algo_selector_1, algo_selector_2 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
 confirm_button = prepare_confirm_button()
