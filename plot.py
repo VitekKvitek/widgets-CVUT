@@ -211,7 +211,7 @@ def get_base_folder(selected_folder):
     base_folder_path = 'data/export/datasets/' + selected_folder + '/test/'
     return base_folder_path
 
-def process_image(img, gt, use_dataset, thresh, def_gt = None):
+def process_image(img, gt, use_dataset, thresh, id = None, def_gt = None):
     # Three images
     contoured_image = draw_contours(img, gt, use_dataset, thresh)
     overlay_50 = draw_overlay(0.5, img, gt, use_dataset, thresh)
@@ -220,7 +220,7 @@ def process_image(img, gt, use_dataset, thresh, def_gt = None):
     if(use_dataset):
         five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img, np.full_like(gt, 255)), axis=1)
     else:
-        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, gt, def_gt, thresh), normalize_score()), axis=1)
+        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, gt, def_gt, thresh), normalize_score(id)), axis=1)
     
     return five_imgs
 
@@ -265,13 +265,13 @@ def make_combined(id):
         vals['images'][2] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], True)
         vals['images'][3] = load_image(selected_file, selected_folder)
 
-        vals['processed_images'][0] = process_image(vals['images'][3], vals['images'][0], False, vals['threshold'][0], vals['images'][2])
-        vals['processed_images'][1] = process_image(vals['images'][3], vals['images'][1], False, vals['threshold'][1], vals['images'][2])
+        vals['processed_images'][0] = process_image(vals['images'][3], vals['images'][0], False, vals['threshold'][0], 0, vals['images'][2])
+        vals['processed_images'][1] = process_image(vals['images'][3], vals['images'][1], False, vals['threshold'][1], 1, vals['images'][2])
         vals['processed_images'][2] = process_image(vals['images'][3], vals['images'][2], True, vals['threshold'][0])
     
     # New process / gt + process for selected image 
     else:
-        vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'][id], vals['images'][2])
+        vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'][id], id, vals['images'][2])
 
 output = widgets.Output()
 
@@ -302,20 +302,20 @@ def update_slider(change, id):
 def prepare_sliders():
     thresh = vals['threshold']
 
-    road_slider0 = widgets.FloatSlider(value=thresh[0][0], min=0, max=0.9, step=0.0001, description='Road Threshold', readout_format='.4f',
-                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'), continuous_update=False)
+    road_slider0 = widgets.FloatSlider(value=thresh[0][0], min=0, max=0.95, step=0.0001, description='Road Threshold', readout_format='.4f',
+                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     road_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
-    obstacle_slider0 = widgets.FloatSlider(value=thresh[0][1], min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
-                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'), continuous_update=False)
+    obstacle_slider0 = widgets.FloatSlider(value=thresh[0][1], min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
-    road_slider1 = widgets.FloatSlider(value=thresh[1][0], min=0, max=0.9, step=0.0001, description='Road Threshold', readout_format='.4f',
-                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'), continuous_update=False)
+    road_slider1 = widgets.FloatSlider(value=thresh[1][0], min=0, max=0.95, step=0.0001, description='Road Threshold', readout_format='.4f',
+                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     road_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
-    obstacle_slider1 = widgets.FloatSlider(value=thresh[1][1], min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
-                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'), continuous_update=False)
+    obstacle_slider1 = widgets.FloatSlider(value=thresh[1][1], min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
     return road_slider0, obstacle_slider0, road_slider1, obstacle_slider1
@@ -344,8 +344,8 @@ def update_vals(alg0,alg1,folder,dataset):
     show_final(3)
 
 
-def normalize_score(norm_scale=0.2, norm_thr=0.9):
-    score = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][0], False)
+def normalize_score(id, norm_scale=0.2, norm_thr=0.9):
+    score = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][id], False)
     
     # Create masks for ID and OOD
     mask_id = score <= norm_thr
@@ -356,10 +356,7 @@ def normalize_score(norm_scale=0.2, norm_thr=0.9):
     
     # Apply normalization for OOD scores
     score[mask_ood] = norm_scale + (1.0 - norm_scale) * ((score[mask_ood] - norm_thr) / (1.0 - norm_thr))
-
-   
     
-
     # Convert the 2D array to a 3D array by applying a colormap
     score_rgb = plt.cm.magma(score)[:, :, :3]  # Discard the alpha channel
     score_rgb = (score_rgb * 255).astype(np.uint8)
