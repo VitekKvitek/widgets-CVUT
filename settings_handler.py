@@ -3,39 +3,57 @@ from os import listdir,makedirs
 from os.path import isfile, join, exists
 import ipywidgets as widgets
 from IPython.display import display
-# dictionary for all widgets which values are going to be tracked
+# Dictionary for all widgets which values are going to be tracked
 widget_dic = {}
+# Dictionary for all variables that are going to be tracked
+# Most of the times values that are associated with buttons but can not be accessed through the button
+variable_dic = {}
+# Default settings folder
 settings_folder = 'settings/'
 # Name of file in which the upcoming save of settings will be written
 will_save_file_name = 'name_not_given'
 will_load_file_name = None
 uploader_widget = None
 # Adds widget to the list of widgets which are going to be stored
-def add(new_widget, name):
-    widget_dic[name] = new_widget
+def add(new_object_to_remember, name, widget = True):
+    if widget:
+        widget_dic[name] = new_object_to_remember
+    else:
+        variable_dic[name] = new_object_to_remember
+        pass
 def add_uploader_widget(uploader_widget_par):
     global uploader_widget
     uploader_widget = uploader_widget_par
 # Function to collect widget states
 def get_widget_values():
-    values_dic = {}
-    # TODO
+    widget_values_dic = {}
     for name, widget in widget_dic.items():
-        values_dic[name] = widget.value
-    return values_dic
+        widget_values_dic[name] = widget.value
+    return widget_values_dic
+def get_var_values():
+    var_value_dict = {}
+    for name, var in variable_dic.items():
+        var_value_dict[name] = var[0]
+    return var_value_dict
 # Called by save button
 def save(*args,**kwargs):
     print('start save')
     # Dump the list of values to file
-    values_dic = get_widget_values()
+    all_values = {}
+    widget_values_dic = get_widget_values()
+    var_value_dic = get_var_values()
+    all_values['widgets'] = widget_values_dic
+    all_values['variables'] = var_value_dic
     with open(settings_folder + will_save_file_name+'.json', 'w') as file:
-        json.dump(values_dic, file)
+        json.dump(all_values, file)
     # Updates options of uploader widget
     uploader_widget.options = get_all_files()
 # Called by load_button - Function to load widget values
 def load_widget_states(loaded_vlaue_dict):
-    for name,loaded_value in loaded_vlaue_dict.items():
+    for name,loaded_value in loaded_vlaue_dict['widgets'].items():
         widget_dic[name].value = loaded_value
+    for name, loaded_value in loaded_vlaue_dict['variables'].items():
+        variable_dic[name][0] = loaded_value
 # loads the data from json file and sets the current_loaded_settings
 # Does not change widgets!!!
 def load(*args,**kwargs):
@@ -52,7 +70,6 @@ def set_load_file_name(change):
     global will_load_file_name
     will_load_file_name = change['new']
 def get_all_files():
-    settings_folder = 'settings'  # Define the folder name
     # Check if the folder exists, and create it if it doesn't
     if not exists(settings_folder):
         makedirs(settings_folder)

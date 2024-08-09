@@ -22,10 +22,13 @@ bl_row = []
 out = widgets.Output()
 
 # Stores the state of ascending AP and FPRat95
-ascend_AP = True
-ascend_FPRat95 = True
+ascend_AP = [True]
+add(ascend_AP,'ascend_AP', False)
+ascend_FPRat95 = [True]
+add(ascend_FPRat95,'ascend_FPRat95',False)
 # Stores the column by which it should be ordered
-average_type = 'AP'
+average_type = ['AP']
+add(average_type, 'average_type', False)
 # Sorts the table based on selected criteria
 apply_highlight = True
 def calculate_mean_average():
@@ -49,16 +52,16 @@ def sort_by_average(df, called_by_button = False):
     global ascend_FPRat95
     global average_type
     # Determine the column to sort by
-    if average_type == 'AP':
+    if average_type[0] == 'AP':
         average_column = [('Average', 'AP')]
-        ascend = ascend_AP
+        ascend = ascend_AP[0]
         if called_by_button:
-            ascend_AP = not ascend_AP
+            ascend_AP[0] = not ascend_AP[0]
     else:
         average_column = [('Average', 'FPRat95')]
-        ascend = ascend_FPRat95
+        ascend = ascend_FPRat95[0]
         if called_by_button:
-            ascend_FPRat95 = not ascend_FPRat95
+            ascend_FPRat95[0] = not ascend_FPRat95[0]
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
     return sorted_df
@@ -86,17 +89,17 @@ def sort_button_on_click(button):
         description = button.description.split()[1:]
     else:
         description = button.description.split()
-    average_type = score_type
+    average_type[0] = score_type
     # Sets the new description
     if score_type == 'AP':
         button_FPRat95.description = 'Sort by FPRat95'
-        if ascend_AP:
+        if ascend_AP[0]:
             button.description = 'asc ' + ' '.join(description)
         else:
             button.description = 'desc ' + ' '.join(description)
     if score_type == 'FPRat95':
         button_AP.description = 'Sort by AP'
-        if ascend_FPRat95:
+        if ascend_FPRat95[0]:
             button.description = 'asc ' + ' '.join(description)
         else:
             button.description = 'desc ' + ' '.join(description)
