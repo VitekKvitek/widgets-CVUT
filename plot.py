@@ -190,11 +190,7 @@ def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
 
     # Load ground truth
     original_gt = cv.imread(original_gt_path) if use_dataset else np.load(original_gt_path)
-    assert original_gt is not None, f"original_gt could not be read from {original_gt_path}"
-
-     # Normalize the score if not using the dataset (i.e., the score is loaded)
-    if not use_dataset:
-        original_gt = normalize_score(original_gt)
+    assert original_gt is not None, f"original_gt could not be read from {original_gt_path}"    
 
     return original_gt
 
@@ -220,14 +216,13 @@ def process_image(img, gt, use_dataset, thresh, def_gt = None):
     contoured_image = draw_contours(img, gt, use_dataset, thresh)
     overlay_50 = draw_overlay(0.5, img, gt, use_dataset, thresh)
     overlay_100 = draw_overlay(1, img, gt, use_dataset, thresh)
-    
+
     if(use_dataset):
-        four_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img), axis=1)
+        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img, np.full_like(gt, 255)), axis=1)
     else:
-        four_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, gt, def_gt, thresh)), axis=1)
+        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, gt, def_gt, thresh), normalize_score(gt)), axis=1)
     
-    
-    return four_imgs
+    return five_imgs
 
 def save_image(b):
     # Create 'output' directory if it doesn't exist
@@ -235,8 +230,6 @@ def save_image(b):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-
-
     base_filename = os.path.splitext(vals["selected_file"])[0]
     
     unique_name = f"{contract(vals['selected_folder'])}-{base_filename}-{vals['selected_algo'][0][-15:]}-{vals['selected_algo'][0][-15:]}.png"
@@ -252,10 +245,10 @@ def save_image(b):
         display(FileLink(filename))
 
 def combine_rows():
-    final_image = np.concatenate((vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1]), axis=0)  
+    final_image = np.concatenate((vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1]), axis=0)   
     return final_image
 
-def make_combined(new_gt, id):
+def make_combined(id):
     # změna slideru = ulozeny #2 (ctyrty obrazek) a default zustanou stejne, nacteni #1 jen metod na kresleni       show_final(False, 0)
     # změna metody = ulozeny #1 a default zustane stejny, nacteni gt noveho + metody kresleni                       show_final(True, 1)
     # změna filu = nacteni novych obrazku + gt + metod kresleni u všech obrázků (id 3)                              show_final(True/False, 2)
@@ -278,79 +271,52 @@ def make_combined(new_gt, id):
     
     # New process / gt + process for selected image 
     else:
-        # Process image with new gt with ID
-        if new_gt:
-            vals['images'][id] = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][id], False)
-            vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'][id], vals['images'][2])
-        # Process with old gt with ID 
-        else:
-            vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'][id], vals['images'][2])
+        vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'][id], vals['images'][2])
 
 output = widgets.Output()
 
-def show_final(new_gt, id, fig_size=(16, 12)):
-    make_combined(new_gt, id)
+def show_final(id, fig_size=(16, 12)):
+    make_combined(id)
     
     final_image = combine_rows()
-
-
     
     with output:
-        clear_output(wait=False)
-        if(id > 1):
-            plt.figure(figsize=fig_size)
-            plt.imshow(final_image)
-            plt.axis('off')
-            plt.title('Contours and Overlays')
-            plt.show()
-    
-
-
-# Dictionary to hold the timers for debouncing
-debounce_timers = {}
-
-def debounced_update_slider(change, id, debounce_time=0.5):
-    #print("debounced")
-    global debounce_timers
-
-    # Cancel any existing timer for this id
-    if id in debounce_timers:
-        debounce_timers[id].cancel()
-
-    # Create a new timer
-    debounce_timers[id] = Timer(debounce_time, update_slider, [change, id])
-    debounce_timers[id].start()
+        clear_output(wait=True)
+        plt.figure(figsize=fig_size)
+        plt.imshow(final_image)
+        plt.axis('off')
+        plt.title('Contours and Overlays')
+        plt.show()
 
 def update_slider(change, id):
-    #print("slider update")
-    
+    # Update slider values in the global vals dictionary
     if id == 0:
         vals['threshold'][0] = [road_slider0.value, obstacle_slider0.value]
     else:
         vals['threshold'][1] = [road_slider1.value, obstacle_slider1.value]
 
     # Show the image with the updated slider values
-    show_final(False, id)
+    show_final(id)
 
 
 def prepare_sliders():
     thresh = vals['threshold']
 
     road_slider0 = widgets.FloatSlider(value=thresh[0][0], min=0, max=0.9, step=0.0001, description='Road Threshold', readout_format='.4f',
-                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'), continuous_update=False)
     road_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
     obstacle_slider0 = widgets.FloatSlider(value=thresh[0][1], min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
-                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'), continuous_update=False)
     obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
 
     road_slider1 = widgets.FloatSlider(value=thresh[1][0], min=0, max=0.9, step=0.0001, description='Road Threshold', readout_format='.4f',
-                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
+                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'), continuous_update=False)
     road_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
     obstacle_slider1 = widgets.FloatSlider(value=thresh[1][1], min=0.9, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
-                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'))
-    obstacle_slider1.observe(lambda change: debounced_update_slider(change, 1), names='value')
+                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='500px'), continuous_update=False)
+    obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
 
     return road_slider0, obstacle_slider0, road_slider1, obstacle_slider1
 road_slider0, obstacle_slider0, road_slider1, obstacle_slider1 = prepare_sliders()
@@ -375,8 +341,7 @@ def update_vals(alg0,alg1,folder,dataset):
     vals['selected_algo'][1] = alg1
     vals['selected_folder'] = decontract(folder)
     vals['selected_file'] = dataset
-    show_final(False, 3)
-
+    show_final(3)
 
 
 def normalize_score(score, norm_scale=0.2, norm_thr=0.9):
@@ -389,5 +354,13 @@ def normalize_score(score, norm_scale=0.2, norm_thr=0.9):
     
     # Apply normalization for OOD scores
     score[mask_ood] = norm_scale + (1.0 - norm_scale) * ((score[mask_ood] - norm_thr) / (1.0 - norm_thr))
+
+   
     
-    return score
+
+    # Convert the 2D array to a 3D array by applying a colormap
+    score_rgb = plt.cm.magma(score)[:, :, :3]  # Discard the alpha channel
+    score_rgb = (score_rgb * 255).astype(np.uint8)
+    
+    return score_rgb #vals['images'][2] 
+    
