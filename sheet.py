@@ -246,6 +246,8 @@ def prepare_sort_buttons():
     button_AP.on_click(sort_button_on_click)
     button_FPRat95 = widgets.Button(description="Sort by FPRat95")
     button_FPRat95.on_click(sort_button_on_click)
+    add(button_AP,'button_AP', widget= True, description= True)
+    add(button_FPRat95,'button_FPRat95', widget= True, description= True)
     return button_AP, button_FPRat95
 def prepare_highlight_button():
     highlight_button = widgets.ToggleButton(description="Highlight",
