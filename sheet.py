@@ -152,9 +152,9 @@ def prepare_df():
     col = [element for element in col_names for _ in range(score_types_count)]
     # Sets multipleindex columns to the df
     # Example:
-    # | full name    |
-    # |name |surname |
-    # |Borek|Stavitel|
+    # | Dataset      |
+    # | AP | FPRat95 |
+    # | 99 | 2       |
     df.columns = pd.MultiIndex.from_arrays([col,sub_col])
     # Sets the indexes
     df.index = indexes
