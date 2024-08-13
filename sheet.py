@@ -8,15 +8,17 @@ from IPython.display import display, HTML
 from results_loader import read_all_algo_jsons
 import results_comparer
 from settings_handler import add
-from data_module import sheet_data
+from data_module import sd
+
+
 indexes,col_names,data = read_all_algo_jsons()
 
 def calculate_mean_average():
-    ap_columns = sheet_data['display_df'].xs('AP', level=1, axis=1)
+    ap_columns = sd.display_df.xs('AP', level=1, axis=1)
     # Get rid of old average
     ap_columns = ap_columns.drop('Average', axis=1)
     # Extract FPRat95
-    fprat95_columns = sheet_data['display_df'].xs('FPRat95', level=1, axis=1)
+    fprat95_columns = sd.display_df.xs('FPRat95', level=1, axis=1)
     # Get rid of old average
     fprat95_columns = fprat95_columns.drop('Average', axis=1)
     # Calculate the row-wise mean of the 'AP' subcolumns
@@ -24,34 +26,34 @@ def calculate_mean_average():
     # Calculate the row-wise mean of the 'FPRat95' subcolumns
     fprat95_mean = fprat95_columns.mean(axis=1)
     # Add the calculated mean as a new column to the original DataFrame
-    sheet_data['display_df'][('Average', 'AP')] = ap_mean
-    sheet_data['display_df'][('Average', 'FPRat95')] = fprat95_mean
+    sd.display_df[('Average', 'AP')] = ap_mean
+    sd.display_df[('Average', 'FPRat95')] = fprat95_mean
 def sort_by_average(df, called_by_button = False):
     # Determine the column to sort by
-    if sheet_data['average_type'][0] == 'AP':
+    if sd.average_type == 'AP':
         average_column = [('Average', 'AP')]
-        ascend = sheet_data['ascend_AP'][0]
+        ascend = sd.ascend_AP
         if called_by_button:
-            sheet_data['ascend_AP'][0] = not sheet_data['ascend_AP'][0]
+            sd.ascend_AP = not sd.ascend_AP
     else:
         average_column = [('Average', 'FPRat95')]
-        ascend = sheet_data['ascend_FPRat95'][0]
+        ascend = sd.ascend_FPRat95
         if called_by_button:
-            sheet_data['ascend_FPRat95'][0] = not sheet_data['ascend_FPRat95'][0]
+            sd.ascend_FPRat95 = not sd.ascend_FPRat95
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
     return sorted_df
 # This function copies the original df and removes all blacklisted rows and columns
 def drop_blackllisted():
     # Gets original df
-    sheet_data['display_df'] = sheet_data['df'].copy()
+    sd.display_df = sd.df.copy()
     # Cycle which drops rows
-    for row in sheet_data['bl_row']:
-        sheet_data['display_df'] = sheet_data['display_df'].drop(row)
+    for row in sd.bl_row:
+        sd.display_df = sd.display_df.drop(row)
     # Cycle which drops columns
-    for col in sheet_data['bl_col']:
-        sheet_data['display_df'] = sheet_data['display_df'].drop((col,'AP'), axis=1)
-        sheet_data['display_df'] = sheet_data['display_df'].drop((col,'FPRat95'), axis=1)
+    for col in sd.bl_col:
+        sd.display_df = sd.display_df.drop((col,'AP'), axis=1)
+        sd.display_df = sd.display_df.drop((col,'FPRat95'), axis=1)
 # This function is called after clicking a sort button
 def sort_button_on_click(button):
     # It gets score type from the description of button
@@ -62,21 +64,21 @@ def sort_button_on_click(button):
         description = button.description.split()[1:]
     else:
         description = button.description.split()
-    sheet_data['average_type'][0] = score_type
+    sd.average_type = score_type
     # Sets the new description
     if score_type == 'AP':
         button_FPRat95.description = 'Sort by FPRat95'
-        if sheet_data['ascend_AP'][0]:
+        if sd.ascend_AP:
             button.description = 'asc ' + ' '.join(description)
         else:
             button.description = 'desc ' + ' '.join(description)
     if score_type == 'FPRat95':
         button_AP.description = 'Sort by AP'
-        if sheet_data['ascend_FPRat95'][0]:
+        if sd.ascend_FPRat95:
             button.description = 'asc ' + ' '.join(description)
         else:
             button.description = 'desc ' + ' '.join(description)
-    sheet_data['display_df'] = sort_by_average(sheet_data['display_df'], called_by_button=True)
+    sd.display_df = sort_by_average(sd.display_df, called_by_button=True)
     update_sheet()
 # Function that is called after toggle algo button clicked
 def on_button_toggle_alg_bl(change):
@@ -88,11 +90,11 @@ def on_button_toggle_alg_bl(change):
     # Blacklist scenario
     if toggled:
         button.button_style = 'danger'
-        sheet_data['bl_row'].append(button_description)
+        sd.bl_row.append(button_description)
     # Whitelist scenario
     else:
         button.button_style = 'success'
-        sheet_data['bl_row'].remove(button_description)
+        sd.bl_row.remove(button_description)
     export_sheet_row_index_to_comparer()
     update_sheet()
 # Function that is called after toggle dataset button clicked
@@ -106,12 +108,12 @@ def on_button_toggle_ds_bl(change):
     if toggled:
         button.button_style = 'warning'
         # Adds clicked on dataset to blacklist
-        sheet_data['bl_col'].append(button_description)
+        sd.bl_col.append(button_description)
     # Whitelist scenario
     else:
         button.button_style = 'info'
         # Removes clicked on dataset from black list
-        sheet_data['bl_col'].remove(button_description)
+        sd.bl_col.remove(button_description)
     export_sheet_column_index_to_comparer()
     update_sheet()
 def toggle_highlight(change):
@@ -119,17 +121,17 @@ def toggle_highlight(change):
     button = change['owner']
     if toggled:
         button.button_style = 'danger'
-        sheet_data['apply_highlight'] = False
+        sd.apply_highlight = False
     else:
         button.button_style = 'success'
-        sheet_data['apply_highlight'] = True
+        sd.apply_highlight = True
     update_sheet()
 # Functin which updates the showed (displayed) table
 def update_sheet():
     drop_blackllisted()
     calculate_mean_average()
-    sheet_data['display_df'] = sort_by_average(sheet_data['display_df'])
-    styled_df = style_dataframe(sheet_data['display_df'], sheet_data['apply_highlight'])
+    sd.display_df = sort_by_average(sd.display_df)
+    styled_df = style_dataframe(sd.display_df, sd.apply_highlight)
     with out:
         out.clear_output()
         display(HTML(styled_df.to_html()))
@@ -150,9 +152,9 @@ def prepare_df():
     col = [element for element in col_names for _ in range(score_types_count)]
     # Sets multipleindex columns to the df
     # Example:
-    # | full name    |
-    # |name |surname |
-    # |Borek|Stavitel|
+    # | Dataset      |
+    # | AP | FPRat95 |
+    # | 99 | 2       |
     df.columns = pd.MultiIndex.from_arrays([col,sub_col])
     # Sets the indexes
     df.index = indexes
@@ -167,9 +169,9 @@ def prepare_df():
     # Add the calculated mean as a new column to the original DataFrame
     df[('Average', 'AP')] = ap_mean
     df[('Average', 'FPRat95')] = fprat95_mean
-    sheet_data['df'] = df.copy()
-    sheet_data['display_df'] = df.copy()
-    sheet_data['display_df'] = sort_by_average(sheet_data['display_df'])
+    sd.df = df.copy()
+    sd.display_df = df.copy()
+    sd.display_df = sort_by_average(sd.display_df)
 # Function for preparing toggle buttons (blacklist) for algos
 def prepare_algo_black_list():
     all_algos = indexes
@@ -307,21 +309,21 @@ def style_dataframe(df, aply_highlight, column_width=60, border_style='solid', b
     
     return styled_df
 def export_sheet_row_index_to_comparer():
-    algo_list = sheet_data['df'].index
-    algo_list = [item for item in algo_list if item not in sheet_data['bl_row']]
+    algo_list = sd.df.index
+    algo_list = [item for item in algo_list if item not in sd.bl_row]
     results_comparer.import_sheet_row_index(algo_list)
 def export_sheet_column_index_to_comparer():
-    df_column_list = sheet_data['df'].columns.get_level_values(0)
+    df_column_list = sd.df.columns.get_level_values(0)
     df_column_list = list(set(df_column_list))
     df_column_list.remove('Average')
-    df_column_list = [item for item in df_column_list if item not in sheet_data['bl_col']]
+    df_column_list = [item for item in df_column_list if item not in sd.bl_col]
     results_comparer.import_sheet_col_index(df_column_list)
 # Function to display everything
 def initial_display():
     prepare_df()
     hbox_button = widgets.HBox([button_AP, button_FPRat95, highlight_button])
     display(hbox_button)
-    styled_df = style_dataframe(sheet_data['display_df'], sheet_data['apply_highlight'])
+    styled_df = style_dataframe(sd.display_df, sd.apply_highlight)
     with out:
         display(HTML(styled_df.to_html()))
     display(out)
