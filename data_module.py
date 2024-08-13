@@ -13,9 +13,9 @@ sheet_data = {'df': None, # Dataframe with all of the data
               'display_df': None, # Dataframe version which will be displayed - after black list and sorting
               'bl_col': [], # Black list for columns
               'bl_row': [], # Black list for rows
-              'ascend_AP': [True], # Stores the state of ascending AP and FPRat95
-              'ascend_FPRat95' : [False],
-              'average_type': ['AP'], # Stores the column by which it should be ordered
+              'ascend_AP': True, # Stores the state of ascending AP and FPRat95
+              'ascend_FPRat95' : False,
+              'average_type': 'AP', # Stores the column by which it should be ordered
               'apply_highlight': True # If highlighting should be applied
               }
 sd = SimpleNamespace(**sheet_data)
