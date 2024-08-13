@@ -6,9 +6,9 @@ from os.path import isfile, join
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from IPython.display import clear_output, display, FileLink
-
 from settings_handler import add
 
+# Color values
 obstacle_color = [255,0,0]  # Red obstacles
 road_color = [128,64,128]   # Purple road
 
@@ -42,7 +42,6 @@ def create_mask(original_gt, dataset, threshold):
 
 
 def draw_overlay(opacity, original_image, original_gt, dataset, threshold):
-    #print(threshold)
 
     assert original_image.shape[:2] == original_gt.shape[:2], "Images must have the same dimensions"
     road_mask, obstacle_mask = create_mask(original_gt, dataset, threshold)
@@ -67,12 +66,11 @@ def draw_overlay(opacity, original_image, original_gt, dataset, threshold):
     if opacity != 1:
         combined_image = cv.addWeighted(combined_mask, opacity, original_image, 1, 0)
     else:        
+        # full colors if 100% opacity
         combined_image = np.where(combined_mask.any(axis=-1, keepdims=True), combined_mask, original_image)
-
     return combined_image
 
 def draw_contours(original_image, original_gt, dataset, threshold):
-
     
     if(dataset):
         # Convert image to grayscale
@@ -82,8 +80,8 @@ def draw_contours(original_image, original_gt, dataset, threshold):
         _, obstacle_thresh = cv.threshold(imgray, 0, 255, 0)
     else:
         # Convert normalized ground truth to binary images
-        road_thresh = (original_gt >= threshold[0]).astype(np.uint8) * 255  # Threshold for roads
-        obstacle_thresh = (original_gt < threshold[1]).astype(np.uint8) * 255  # Threshold for obstacles
+        road_thresh = (original_gt >= threshold[0]).astype(np.uint8) * 255 
+        obstacle_thresh = (original_gt < threshold[1]).astype(np.uint8) * 255 
 
     # Find contours
     road_contours, _ = cv.findContours(road_thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
@@ -95,12 +93,11 @@ def draw_contours(original_image, original_gt, dataset, threshold):
     cv.drawContours(contours_image, obstacle_contours, -1, obstacle_cont_color, thickness)  
     
     return contours_image
-
+    
 def draw_differance(img, gt, def_gt, thresh):
     # Mozna ziskat obstacle mask z draw conture/ overlay TODO?
     road_mask, obstacle_mask = create_mask(gt, False, thresh)
     
-
     mask1 = obstacle_mask
     mask2 = np.any(def_gt == 0, axis=-1)
 
@@ -122,12 +119,29 @@ def draw_differance(img, gt, def_gt, thresh):
 
     return result_image
 
+def normalize_score(row_index, norm_scale=0.2, norm_thr=0.9):
+    score = load_mask(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][row_index], False)
+    
+    # Create masks for ID and OOD
+    mask_id = score <= norm_thr
+    mask_ood = score > norm_thr
+    
+    # Apply normalization for ID scores
+    score[mask_id] = norm_scale * (score[mask_id] / norm_thr)
+    
+    # Apply normalization for OOD scores
+    score[mask_ood] = norm_scale + (1.0 - norm_scale) * ((score[mask_ood] - norm_thr) / (1.0 - norm_thr))
+    
+    # Convert the 2D array to a 3D array by applying a colormap
+    score_rgb = plt.cm.magma(score)[:, :, :3]  # Discard the alpha channel
+    score_rgb = (score_rgb * 255).astype(np.uint8)
+    return score_rgb
+
 def get_all_files(folder_path):
     all_files = [f for f in listdir(folder_path) if isfile(join(folder_path, f))]
     return all_files
 
 def get_all_folders(directory):
-    # Return only directories, not files
     return [name for name in listdir(directory) if path.isdir(path.join(directory, name))]
 
 def contract(name):
@@ -166,7 +180,7 @@ def decontract(name):
             long_name = None
     return long_name
 
-def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
+def load_mask(selected_file, selected_folder, selected_algo, use_dataset):
     # Determine gt path
     if use_dataset:        
         gt_folder_path = os.path.join(get_base_folder(selected_folder), 'gt')
@@ -182,6 +196,11 @@ def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
 
     return original_gt
 
+def get_base_folder(selected_folder):
+    # Determine folder path
+    base_folder_path = 'data/export/datasets/' + selected_folder + '/test/'
+    return base_folder_path
+
 def load_image(selected_file, selected_folder):
     # Load original image
     imgs_folder_path = os.path.join(get_base_folder(selected_folder), 'imgs')
@@ -194,23 +213,24 @@ def load_image(selected_file, selected_folder):
     original_image_rgb = original_image[:, :, [2, 1, 0]]
     return original_image_rgb
 
-def get_base_folder(selected_folder):
-    # Determine folder path
-    base_folder_path = 'data/export/datasets/' + selected_folder + '/test/'
-    return base_folder_path
-
-def process_image(img, gt, use_dataset, thresh, id = None, def_gt = None):
-    # Three images
-    contoured_image = draw_contours(img, gt, use_dataset, thresh)
-    overlay_50 = draw_overlay(0.5, img, gt, use_dataset, thresh)
-    overlay_100 = draw_overlay(1, img, gt, use_dataset, thresh)
+# Generate all images for one row
+def process_image(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
+    contoured_image = draw_contours(img, mask, use_dataset, thresh)
+    overlay_50 = draw_overlay(0.5, img, mask, use_dataset, thresh)
+    overlay_100 = draw_overlay(1, img, mask, use_dataset, thresh)
 
     if(use_dataset):
-        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img, np.full_like(gt, 255)), axis=1)
+        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img, np.full_like(mask, 255)), axis=1)
     else:
-        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, gt, def_gt, thresh), normalize_score(id)), axis=1)
+        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, mask, def_gt, thresh), normalize_score(row_index)), axis=1)
     
     return five_imgs
+
+def generate_name():
+    base_filename = os.path.splitext(vals["selected_file"])[0] #strip extension
+    # Name: folder-file-algo1-algo2.png
+    unique_name = f"{contract(vals['selected_folder'])}-{base_filename}-{vals['selected_algo'][0][-15:]}-{vals['selected_algo'][1][-15:]}"
+    return unique_name
 
 def save_image(b):
     # Create 'output' directory if it doesn't exist
@@ -218,15 +238,12 @@ def save_image(b):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-    base_filename = os.path.splitext(vals["selected_file"])[0]
+    unique_name = generate_name()+".png"
+    print(unique_name)
     
-    unique_name = f"{contract(vals['selected_folder'])}-{base_filename}-{vals['selected_algo'][0][-15:]}-{vals['selected_algo'][0][-15:]}.png"
-
     # Define the filename with the 'output' directory
     filename = os.path.join(output_dir, unique_name)
-    
     final_rgb = combine_rows()[:, :, [2, 1, 0]]
-    
     cv.imwrite(filename, final_rgb)
     
     with output:
@@ -235,56 +252,62 @@ def save_image(b):
 def combine_rows():
     final_image = np.concatenate((vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1]), axis=0)   
     return final_image
+    
+# value updating select image and select algo
+def update_vals(alg0,alg1,folder,dataset):
+    vals['selected_algo'][0] = alg0
+    vals['selected_algo'][1] = alg1
+    vals['selected_folder'] = decontract(folder)
+    vals['selected_file'] = dataset
+    show_final(3)
 
-def make_combined(id):
-    # změna slideru = ulozeny #2 (ctyrty obrazek) a default zustanou stejne, nacteni #1 jen metod na kresleni       show_final(False, 0)
-    # změna metody = ulozeny #1 a default zustane stejny, nacteni gt noveho + metody kresleni                       show_final(True, 1)
-    # změna filu = nacteni novych obrazku + gt + metod kresleni u všech obrázků (id 3)                              show_final(True/False, 2)
+def make_combined(row_index):
     
     global vals
 
     # New files for everything
-    if id > 1:
+    if row_index > 1:
         selected_file = vals['selected_file']
         selected_folder = vals['selected_folder']
 
-        vals['images'][0] = load_gt(selected_file, selected_folder, vals['selected_algo'][0], False)
-        vals['images'][1] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], False)
-        vals['images'][2] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], True)
+        vals['images'][0] = load_mask(selected_file, selected_folder, vals['selected_algo'][0], False)
+        vals['images'][1] = load_mask(selected_file, selected_folder, vals['selected_algo'][1], False)
+        vals['images'][2] = load_mask(selected_file, selected_folder, vals['selected_algo'][1], True)
         vals['images'][3] = load_image(selected_file, selected_folder)
 
         vals['processed_images'][0] = process_image(vals['images'][3], vals['images'][0], False, vals['threshold'][0], 0, vals['images'][2])
         vals['processed_images'][1] = process_image(vals['images'][3], vals['images'][1], False, vals['threshold'][1], 1, vals['images'][2])
         vals['processed_images'][2] = process_image(vals['images'][3], vals['images'][2], True, vals['threshold'][0])
     
-    # New process / gt + process for selected image 
+    # Edit only changed file based on slider 
     else:
-        vals['processed_images'][id] = process_image(vals['images'][3], vals['images'][id], False, vals['threshold'][id], id, vals['images'][2])
+        vals['processed_images'][row_index] = process_image(vals['images'][3], vals['images'][row_index], False, vals['threshold'][row_index], row_index, vals['images'][2])
 
 output = widgets.Output()
 
-def show_final(row_index, fig_size=(16, 12)):
+def show_final(row_index, fig_size=(24, 12)):
     make_combined(row_index)
     
     final_image = combine_rows()
-    
+    title = generate_name()
+
     with output:
         clear_output(wait=True)
         plt.figure(figsize=fig_size)
         plt.imshow(final_image)
         plt.axis('off')
-        plt.title('Contours and Overlays')
+        plt.title(title)
         plt.show()
 
-def update_slider(change, id):
+def update_slider( _ , row_index):
     # Update slider values in the global vals dictionary
-    if id == 0:
+    if row_index == 0:
         vals['threshold'][0] = [road_slider0.value, obstacle_slider0.value]
     else:
         vals['threshold'][1] = [road_slider1.value, obstacle_slider1.value]
 
     # Show the image with the updated slider values
-    show_final(id)
+    show_final(row_index)
 
 
 def prepare_sliders():
@@ -322,31 +345,3 @@ def display_image_settings():
             obstacle_slider1, 
             output,
             save_button)
-
-def update_vals(alg0,alg1,folder,dataset):
-    vals['selected_algo'][0] = alg0
-    vals['selected_algo'][1] = alg1
-    vals['selected_folder'] = decontract(folder)
-    vals['selected_file'] = dataset
-    show_final(3)
-
-
-def normalize_score(id, norm_scale=0.2, norm_thr=0.9):
-    score = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][id], False)
-    
-    # Create masks for ID and OOD
-    mask_id = score <= norm_thr
-    mask_ood = score > norm_thr
-    
-    # Apply normalization for ID scores
-    score[mask_id] = norm_scale * (score[mask_id] / norm_thr)
-    
-    # Apply normalization for OOD scores
-    score[mask_ood] = norm_scale + (1.0 - norm_scale) * ((score[mask_ood] - norm_thr) / (1.0 - norm_thr))
-    
-    # Convert the 2D array to a 3D array by applying a colormap
-    score_rgb = plt.cm.magma(score)[:, :, :3]  # Discard the alpha channel
-    score_rgb = (score_rgb * 255).astype(np.uint8)
-    
-    return score_rgb
-    
