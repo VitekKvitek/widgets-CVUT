@@ -13,10 +13,11 @@ obstacle_color = [255,0,0]  # Red obstacles
 road_color = [128,64,128]   # Purple road
 
 false_positive_color = [255, 0, 0]   # Red
-true_negative_color = [0, 255, 0]  # Green
+false_negative_color = [0, 0, 255]  # Blue
+true_positive = [0, 255, 0]  # Green
 
+obstacle_cont_color = (0,0,255)  # Blue for obstacle contours
 road_cont_color = (0,255,0)   # Green for road contours
-obstacle_cont_color = (255,0,0)  # Red for obstacle contours
 thickness = 3
 
 vals = {
@@ -24,19 +25,21 @@ vals = {
     'processed_images': [None, None, None],  # [alg1, alg2, default]
     'selected_file': '01_Hanns_Klemm_Str_45_000002_000190.png',
     'selected_folder': 'Fishyscapes_LaF',
-    'selected_algo': ['grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1',
+    'selected_algo': ['grood_logml_1000K_01adamw_tau10_resetthr1',
                       'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
-    'threshold': [[0.4, 0.997], [0.4, 0.997]]
+    'threshold': [0.997, 0.997]
 }
 
 def create_mask(original_gt, dataset, threshold):
     # Create binary masks from normalized values
+    road_threshold = 0.4
+    
     if(dataset):
         road_mask = (original_gt == 1)
         obstacle_mask = (original_gt == 0)
     else:
-        road_mask = (original_gt <= threshold[0])  
-        obstacle_mask = (original_gt > threshold[1]) 
+        road_mask = (original_gt <= road_threshold)  
+        obstacle_mask = (original_gt > threshold) 
     
     return road_mask, obstacle_mask
 
@@ -71,7 +74,8 @@ def draw_overlay(opacity, original_image, original_gt, dataset, threshold):
     return combined_image
 
 def draw_contours(original_image, original_gt, dataset, threshold):
-    
+    road_threshold = 0.4
+
     if(dataset):
         # Convert image to grayscale
         imgray = cv.cvtColor(original_gt, cv.COLOR_BGR2GRAY)
@@ -80,16 +84,16 @@ def draw_contours(original_image, original_gt, dataset, threshold):
         _, obstacle_thresh = cv.threshold(imgray, 0, 255, 0)
     else:
         # Convert normalized ground truth to binary images
-        road_thresh = (original_gt >= threshold[0]).astype(np.uint8) * 255 
-        obstacle_thresh = (original_gt < threshold[1]).astype(np.uint8) * 255 
+        road_thresh = (original_gt >= road_threshold).astype(np.uint8) * 255 
+        obstacle_thresh = (original_gt < threshold).astype(np.uint8) * 255 
 
     # Find contours
-    road_contours, _ = cv.findContours(road_thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+    #road_contours, _ = cv.findContours(road_thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
     obstacle_contours, _ = cv.findContours(obstacle_thresh, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
     
     # Draw the contours on a copy of the original image
     contours_image = original_image.copy()
-    cv.drawContours(contours_image, road_contours, -1, road_cont_color, thickness)  
+    #cv.drawContours(contours_image, road_contours, -1, road_cont_color, thickness)  
     cv.drawContours(contours_image, obstacle_contours, -1, obstacle_cont_color, thickness)  
     
     return contours_image
@@ -105,7 +109,8 @@ def draw_differance(img, gt, def_gt, thresh):
 
     # Set colors where booleans are different
     combined_image[(mask1 & ~mask2)] = false_positive_color
-    combined_image[(~mask1 & mask2)] = true_negative_color
+    combined_image[(~mask1 & mask2)] = false_negative_color
+    combined_image[(mask1 & mask2)] = true_positive
 
     # Create black mask
     black_mask = np.all(combined_image == [0, 0, 0], axis=-1)
@@ -120,7 +125,7 @@ def draw_differance(img, gt, def_gt, thresh):
     return result_image
 
 def normalize_score(row_index, norm_scale=0.2, norm_thr=0.9):
-    score = load_mask(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][row_index], False)
+    score = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][row_index], False)
     
     # Create masks for ID and OOD
     mask_id = score <= norm_thr
@@ -180,7 +185,7 @@ def decontract(name):
             long_name = None
     return long_name
 
-def load_mask(selected_file, selected_folder, selected_algo, use_dataset):
+def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
     # Determine gt path
     if use_dataset:        
         gt_folder_path = os.path.join(get_base_folder(selected_folder), 'gt')
@@ -215,14 +220,16 @@ def load_image(selected_file, selected_folder):
 
 # Generate all images for one row
 def process_image(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
-    contoured_image = draw_contours(img, mask, use_dataset, thresh)
+    
     overlay_50 = draw_overlay(0.5, img, mask, use_dataset, thresh)
-    overlay_100 = draw_overlay(1, img, mask, use_dataset, thresh)
+    contour_w_overlay = draw_contours(overlay_50, mask, use_dataset, thresh)
+    #overlay_100 = draw_overlay(1, img, mask, use_dataset, thresh)
+    
 
     if(use_dataset):
-        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, img, np.full_like(mask, 255)), axis=1)
+        five_imgs = np.concatenate((img, contour_w_overlay, np.full_like(mask, 255)), axis=1)
     else:
-        five_imgs = np.concatenate((contoured_image, overlay_50, overlay_100, draw_differance(img, mask, def_gt, thresh), normalize_score(row_index)), axis=1)
+        five_imgs = np.concatenate((normalize_score(row_index),contour_w_overlay, draw_differance(img, mask, def_gt, thresh)), axis=1)
     
     return five_imgs
 
@@ -270,9 +277,9 @@ def make_combined(row_index):
         selected_file = vals['selected_file']
         selected_folder = vals['selected_folder']
 
-        vals['images'][0] = load_mask(selected_file, selected_folder, vals['selected_algo'][0], False)
-        vals['images'][1] = load_mask(selected_file, selected_folder, vals['selected_algo'][1], False)
-        vals['images'][2] = load_mask(selected_file, selected_folder, vals['selected_algo'][1], True)
+        vals['images'][0] = load_gt(selected_file, selected_folder, vals['selected_algo'][0], False)
+        vals['images'][1] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], False)
+        vals['images'][2] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], True)
         vals['images'][3] = load_image(selected_file, selected_folder)
 
         vals['processed_images'][0] = process_image(vals['images'][3], vals['images'][0], False, vals['threshold'][0], 0, vals['images'][2])
@@ -302,9 +309,9 @@ def show_final(row_index, fig_size=(24, 12)):
 def update_slider( _ , row_index):
     # Update slider values in the global vals dictionary
     if row_index == 0:
-        vals['threshold'][0] = [road_slider0.value, obstacle_slider0.value]
+        vals['threshold'][0] = obstacle_slider0.value
     else:
-        vals['threshold'][1] = [road_slider1.value, obstacle_slider1.value]
+        vals['threshold'][1] = obstacle_slider1.value
 
     # Show the image with the updated slider values
     show_final(row_index)
@@ -313,24 +320,17 @@ def update_slider( _ , row_index):
 def prepare_sliders():
     thresh = vals['threshold']
 
-    road_slider0 = widgets.FloatSlider(value=thresh[0][0], min=0, max=0.95, step=0.0001, description='Road Threshold', readout_format='.4f',
-                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
-    road_slider0.observe(lambda change: update_slider(change, 0), names='value')
-    # add(road_slider0,'road_slider0')
-    obstacle_slider0 = widgets.FloatSlider(value=thresh[0][1], min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+    obstacle_slider0 = widgets.FloatSlider(value=thresh[0], min=0.95, max=1, step=0.0001, description='Obstacle Threshold First row', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
-    # add(obstacle_slider0, 'obstacle_slider0')
-    road_slider1 = widgets.FloatSlider(value=thresh[1][0], min=0, max=0.95, step=0.0001, description='Road Threshold', readout_format='.4f',
-                                       style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
-    road_slider1.observe(lambda change: update_slider(change, 1), names='value')
-    # add(road_slider1,'road_slider1')
-    obstacle_slider1 = widgets.FloatSlider(value=thresh[1][1], min=0.95, max=1, step=0.0001, description='Obstacle Threshold', readout_format='.4f', 
+    add(obstacle_slider0, 'obstacle_slider0')
+
+    obstacle_slider1 = widgets.FloatSlider(value=thresh[1], min=0.95, max=1, step=0.0001, description='Obstacle Threshold Second row', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
-    # add(obstacle_slider1,'obstacle_slider1')
-    return road_slider0, obstacle_slider0, road_slider1, obstacle_slider1
-road_slider0, obstacle_slider0, road_slider1, obstacle_slider1 = prepare_sliders()
+    add(obstacle_slider1,'obstacle_slider1')
+    return obstacle_slider0, obstacle_slider1
+obstacle_slider0, obstacle_slider1 = prepare_sliders()
 
 def prepare_save_image():
     save_button = widgets.Button(description="Save Image")     
@@ -339,9 +339,7 @@ def prepare_save_image():
 save_button = prepare_save_image()
 
 def display_image_settings():
-    display(road_slider0, 
-            obstacle_slider0, 
-            road_slider1, 
+    display(obstacle_slider0,  
             obstacle_slider1, 
             output,
             save_button)
