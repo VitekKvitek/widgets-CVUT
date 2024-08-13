@@ -1,4 +1,6 @@
+# In this script data are stored
 from types import SimpleNamespace
+
 res_data ={'algo_0' : None,
            'algo_1': None,
            'data_0': None, # Per frame data of algo 0
