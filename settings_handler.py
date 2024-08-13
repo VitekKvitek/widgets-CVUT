@@ -12,7 +12,7 @@ variable_dic = {}
 # Default settings folder
 settings_folder = 'settings/'
 # Name of file in which the upcoming save of settings will be written
-will_save_file_name = 'name_not_given'
+will_save_file_name = 'unnamed_preset'
 will_load_file_name = None
 # Adds widget to the list of widgets which are going to be stored
 def add(new_object_to_remember, name, widget = True, description = False):
