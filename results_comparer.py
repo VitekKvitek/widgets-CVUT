@@ -78,7 +78,8 @@ def make_confirmation(*args,**kwargs):
         rd.data_1 = read_per_f_results (rd.algo_1)
         if rd.selected_img != None and rd.selected_img_dataset != None:
             update_vals(rd.algo_0, rd.algo_1, rd.selected_img_dataset, rd.selected_img)
-    compare_results()
+            update_score_labels()
+        compare_results()
 def update_selected_dataset(change):
     rd.selected_img_dataset = change['new']
     update_img_selector()
@@ -87,13 +88,7 @@ def update_img_selector():
         img_selector.options = rd.sorted_keys[rd.selected_img_dataset]
     except:
         pass
-# TODO call Jirka
-def select_image(*args,**kwargs):
-    # print(rd.selected_img,rd.selected_img_dataset)
-    if rd.selected_img == None or rd.selected_img_dataset == None:
-        return
-    update_vals(rd.algo_0, rd.algo_1, rd.selected_img_dataset, rd.selected_img)
-    #TODO
+def update_score_labels():
     # Get scores for the current image using the provided function
     algo_1_score, algo_2_score = get_score_for_current_img()
 
@@ -128,6 +123,12 @@ def select_image(*args,**kwargs):
         padding='5px',
         border='solid 1px black'
     )   
+def select_image(*args,**kwargs):
+    # print(rd.selected_img,rd.selected_img_dataset)
+    if rd.selected_img == None or rd.selected_img_dataset == None:
+        return
+    update_vals(rd.algo_0, rd.algo_1, rd.selected_img_dataset, rd.selected_img)
+    update_score_labels()
 
 def get_score_for_current_img():
     return rd.data_0[rd.selected_img_dataset][rd.selected_img], rd.data_1[rd.selected_img_dataset][rd.selected_img]
