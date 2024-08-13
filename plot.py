@@ -219,19 +219,32 @@ def load_image(selected_file, selected_folder):
     return original_image_rgb
 
 # Generate all images for one row
-def process_image(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
+def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
     
     overlay_50 = draw_overlay(0.5, img, mask, use_dataset, thresh)
     contour_w_overlay = draw_contours(overlay_50, mask, use_dataset, thresh)
     #overlay_100 = draw_overlay(1, img, mask, use_dataset, thresh)
     
-
-    if(use_dataset):
-        five_imgs = np.concatenate((img, contour_w_overlay, np.full_like(mask, 255)), axis=1)
-    else:
-        five_imgs = np.concatenate((normalize_score(row_index),contour_w_overlay, draw_differance(img, mask, def_gt, thresh)), axis=1)
+    # Create a white border of width 10 pixels
+    border_width = 10
+    white_border = np.full((img.shape[0], border_width, img.shape[2]), 255, dtype=img.dtype)
     
-    return five_imgs
+    # Concatenate with borders
+    if use_dataset:
+        row = np.concatenate((
+            img, 
+            white_border, 
+            contour_w_overlay, 
+            white_border, 
+            np.full_like(mask, 255)), axis=1)
+    else:
+        row = np.concatenate((
+            normalize_score(row_index),
+            white_border,
+            contour_w_overlay,
+            white_border,
+            draw_differance(img, mask, def_gt, thresh)), axis=1)
+    return row
 
 def generate_name():
     base_filename = os.path.splitext(vals["selected_file"])[0] #strip extension
@@ -257,7 +270,18 @@ def save_image(b):
         display(FileLink(filename))
 
 def combine_rows():
-    final_image = np.concatenate((vals['processed_images'][2], vals['processed_images'][0], vals['processed_images'][1]), axis=0)   
+    # Create a white border of height 10 pixels
+    border_height = 10
+    white_border = np.full((border_height, vals['processed_images'][0].shape[1], vals['processed_images'][0].shape[2]), 255, dtype=vals['processed_images'][0].dtype)
+    
+    # Concatenate the rows with the white borders
+    final_image = np.concatenate((
+        vals['processed_images'][2],
+        white_border,
+        vals['processed_images'][0],
+        white_border,
+        vals['processed_images'][1]), axis=0)
+    
     return final_image
     
 # value updating select image and select algo
@@ -268,7 +292,7 @@ def update_vals(alg0,alg1,folder,dataset):
     vals['selected_file'] = dataset
     show_final(3)
 
-def make_combined(row_index):
+def save_rows(row_index):
     
     global vals
 
@@ -282,18 +306,18 @@ def make_combined(row_index):
         vals['images'][2] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], True)
         vals['images'][3] = load_image(selected_file, selected_folder)
 
-        vals['processed_images'][0] = process_image(vals['images'][3], vals['images'][0], False, vals['threshold'][0], 0, vals['images'][2])
-        vals['processed_images'][1] = process_image(vals['images'][3], vals['images'][1], False, vals['threshold'][1], 1, vals['images'][2])
-        vals['processed_images'][2] = process_image(vals['images'][3], vals['images'][2], True, vals['threshold'][0])
+        vals['processed_images'][0] = make_row(vals['images'][3], vals['images'][0], False, vals['threshold'][0], 0, vals['images'][2])
+        vals['processed_images'][1] = make_row(vals['images'][3], vals['images'][1], False, vals['threshold'][1], 1, vals['images'][2])
+        vals['processed_images'][2] = make_row(vals['images'][3], vals['images'][2], True, vals['threshold'][0])
     
     # Edit only changed file based on slider 
     else:
-        vals['processed_images'][row_index] = process_image(vals['images'][3], vals['images'][row_index], False, vals['threshold'][row_index], row_index, vals['images'][2])
+        vals['processed_images'][row_index] = make_row(vals['images'][3], vals['images'][row_index], False, vals['threshold'][row_index], row_index, vals['images'][2])
 
 output = widgets.Output()
 
 def show_final(row_index, fig_size=(24, 12)):
-    make_combined(row_index)
+    save_rows(row_index)
     
     final_image = combine_rows()
     title = generate_name()
