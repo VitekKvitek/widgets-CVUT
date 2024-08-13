@@ -11,6 +11,7 @@ res_data ={'algo_0' : None,
            'difference_type' : 'AP' # By which score will be the 2 algos compared
            }
 rd = SimpleNamespace(**res_data)
+
 sheet_data = {'df': None, # Dataframe with all of the data
               'display_df': None, # Dataframe version which will be displayed - after black list and sorting
               'bl_col': [], # Black list for columns
