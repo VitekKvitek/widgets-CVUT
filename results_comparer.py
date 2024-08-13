@@ -1,11 +1,11 @@
-# script for comparing per frame rusults
+# script for comparing per frame results
 import ipywidgets as widgets
 from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
 from plot import update_vals
 from settings_handler import add
-from data_module import res_data
+from data_module import rd
 
 # Function for setting row index list which will be showed in algo selector
 def import_sheet_row_index(index_list):
@@ -15,7 +15,8 @@ def import_sheet_row_index(index_list):
     algo_selector_1.options = algo_list
     algo_selector_2.options = algo_list
     # TODO slow
-    # System for displaying old selection 
+    # System for displaying old selection
+    # Otherwise new option would be picked
     if selector_1_value in algo_list:
         algo_selector_1.value = selector_1_value
     if selector_2_value in algo_list:
@@ -29,40 +30,40 @@ def import_sheet_col_index(index_list):
         dataset_selector.value = folder_selector_value
 # Called after alg selection 1
 def load_data_1(change):
-    res_data['algo_0'] = change['new']
+    rd.algo_0 = change['new']
 # Called after alg selection 2
 def load_data_2(change):
-    res_data['algo_1'] = change['new']
+    rd.algo_1 = change['new']
 # Compares results and sorts them by biggest difference in selected score type
 def compare_results():
     # Returns if any of the data are None - can not compare only singular data
-    if res_data['data_0'] == None or res_data['data_1'] == None:
+    if rd.data_0 == None or rd.data_1 == None:
         return
-    for dataset_key in res_data['data_0'].keys():
-        dataset_algo_1 = res_data['data_0'][dataset_key]
-        dataset_algo_2 = res_data['data_1'][dataset_key]
+    for dataset_key in rd.data_0.keys():
+        dataset_algo_1 = rd.data_0[dataset_key]
+        dataset_algo_2 = rd.data_1[dataset_key]
         # Calculate the absolute differences and store them in a new dictionary
         differences = {}
         for key in dataset_algo_1:
             # Extract the value for the given difference type from both datasets
-            value_1 = dataset_algo_1[key][res_data['difference_type']]
-            value_2 = dataset_algo_2[key][res_data['difference_type']]
+            value_1 = dataset_algo_1[key][rd.difference_type]
+            value_2 = dataset_algo_2[key][rd.difference_type]
             # Calculate the absolute difference between the values
             difference = abs(value_1 - value_2)
             # Store the difference in the dictionary with the key
             differences[key] = difference
         # Sort the keys based on the differences in descending order
         dataset_sorted_keys = sorted(differences, key=differences.get, reverse=True)
-        res_data['sorted_keys'][dataset_key] = dataset_sorted_keys
+        rd.sorted_keys[dataset_key] = dataset_sorted_keys
     # Updates the options of img_selector
     update_img_selector()
 def set_selected_img(change):
-    res_data['selected_img'] = change['new']
+    rd.selected_img = change['new']
 # Sets difference type by which it will be sorted
 def set_difference_type(button):
     new_difference_type = button.description.split()[-1]
-    if new_difference_type != ['difference_type']:
-        res_data['difference_type'] = new_difference_type
+    if new_difference_type != rd.difference_type:
+        rd.difference_type = new_difference_type
         compare_results()
     if new_difference_type == 'AP':
         hbox_button.children[0].button_style = 'info'
@@ -72,26 +73,26 @@ def set_difference_type(button):
         hbox_button.children[1].button_style = 'info'
 def make_confirmation(*args,**kwargs):
     
-    if res_data['algo_0'] != None and res_data['algo_1'] != None:
-        res_data['data_0'] = read_per_f_results (res_data['algo_0'])
-        res_data['data_1'] = read_per_f_results (res_data['algo_1'])
-        if res_data['selected_img'] != None and res_data['selected_img_dataset'] != None:
-            update_vals(res_data['algo_0'], res_data['algo_1'], res_data['selected_img_dataset'], res_data['selected_img'])
+    if rd.algo_0 != None and rd.algo_1 != None:
+        rd.data_0 = read_per_f_results (rd.algo_0)
+        rd.data_1 = read_per_f_results (rd.algo_1)
+        if rd.selected_img != None and rd.selected_img_dataset != None:
+            update_vals(rd.algo_0, rd.algo_1, rd.selected_img_dataset, rd.selected_img)
     compare_results()
 def update_selected_dataset(change):
-    res_data['selected_img_dataset'] = change['new']
+    rd.selected_img_dataset = change['new']
     update_img_selector()
 def update_img_selector():
     try:
-        img_selector.options = res_data['sorted_keys'][res_data['selected_img_dataset']]
+        img_selector.options = rd.sorted_keys[rd.selected_img_dataset]
     except:
         pass
 # TODO call Jirka
 def select_image(*args,**kwargs):
-    print(res_data['selected_img'],res_data['selected_img_dataset'])
-    if res_data['selected_img'] == None or res_data['selected_img_dataset'] == None:
+    # print(rd.selected_img,rd.selected_img_dataset)
+    if rd.selected_img == None or rd.selected_img_dataset == None:
         return
-    update_vals(res_data['algo_0'], res_data['algo_1'], res_data['selected_img_dataset'], res_data['selected_img'])
+    update_vals(rd.algo_0, rd.algo_1, rd.selected_img_dataset, rd.selected_img)
     #TODO
     # Get scores for the current image using the provided function
     algo_1_score, algo_2_score = get_score_for_current_img()
@@ -129,7 +130,7 @@ def select_image(*args,**kwargs):
     )   
 
 def get_score_for_current_img():
-    return res_data['data_0'][res_data['selected_img_dataset']][res_data['selected_img']], res_data['data_1'][res_data['selected_img_dataset']][res_data['selected_img']]
+    return rd.data_0[rd.selected_img_dataset][rd.selected_img], rd.data_1[rd.selected_img_dataset][rd.selected_img]
 
 # Displays all widgets needed for comparer to function
 # Prepare dropdowns to select algo
