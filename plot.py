@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from IPython.display import clear_output, display, FileLink
 from settings_handler import add
+from data_module import iv
 
 # Color values
 obstacle_color = [255,0,0]  # Red obstacles
@@ -19,16 +20,6 @@ true_positive = [0, 255, 0]  # Green
 obstacle_cont_color = (0,0,255)  # Blue for obstacle contours
 road_cont_color = (0,255,0)   # Green for road contours
 thickness = 3
-
-vals = {
-    'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
-    'processed_images': [None, None, None],  # [alg1, alg2, default]
-    'selected_file': '01_Hanns_Klemm_Str_45_000002_000190.png',
-    'selected_folder': 'Fishyscapes_LaF',
-    'selected_algo': ['grood_logml_1000K_01adamw_tau10_resetthr1',
-                      'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
-    'threshold': [0.997, 0.997]
-}
 
 def create_mask(original_gt, dataset, threshold):
     # Create binary masks from normalized values
@@ -125,7 +116,7 @@ def draw_differance(img, gt, def_gt, thresh):
     return result_image
 
 def normalize_score(row_index, norm_scale=0.2, norm_thr=0.9):
-    score = load_gt(vals['selected_file'], vals['selected_folder'], vals['selected_algo'][row_index], False)
+    score = load_gt(iv.selected_file, iv.selected_folder , iv.selected_algo[row_index], False)
     
     # Create masks for ID and OOD
     mask_id = score <= norm_thr
@@ -247,9 +238,9 @@ def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
     return row
 
 def generate_name():
-    base_filename = os.path.splitext(vals["selected_file"])[0] #strip extension
+    base_filename = os.path.splitext(iv.selected_file)[0] #strip extension
     # Name: folder-file-algo1-algo2.png
-    unique_name = f"{contract(vals['selected_folder'])}-{base_filename}-{vals['selected_algo'][0][-15:]}-{vals['selected_algo'][1][-15:]}"
+    unique_name = f"{contract(iv.selected_folder)}-{base_filename}-{iv.selected_algo[0][-15:]}-{iv.selected_algo[1][-15:]}"
     return unique_name
 
 def save_image(b):
@@ -272,47 +263,47 @@ def save_image(b):
 def combine_rows():
     # Create a white border of height 10 pixels
     border_height = 10
-    white_border = np.full((border_height, vals['processed_images'][0].shape[1], vals['processed_images'][0].shape[2]), 255, dtype=vals['processed_images'][0].dtype)
+    white_border = np.full((border_height, iv.row[0].shape[1], iv.row[0].shape[2]), 255, dtype=iv.row[0].dtype)
     
     # Concatenate the rows with the white borders
     final_image = np.concatenate((
-        vals['processed_images'][2],
+        iv.row[2],
         white_border,
-        vals['processed_images'][0],
+        iv.row[0],
         white_border,
-        vals['processed_images'][1]), axis=0)
+        iv.row[1]), axis=0)
     
     return final_image
     
 # value updating select image and select algo
 def update_vals(alg0,alg1,folder,dataset):
-    vals['selected_algo'][0] = alg0
-    vals['selected_algo'][1] = alg1
-    vals['selected_folder'] = decontract(folder)
-    vals['selected_file'] = dataset
+    iv.selected_algo[0] = alg0
+    iv.selected_algo[1] = alg1
+    iv.selected_folder = decontract(folder)
+    iv.selected_file = dataset
     show_final(3)
 
 def save_rows(row_index):
     
-    global vals
+    
 
     # New files for everything
     if row_index > 1:
-        selected_file = vals['selected_file']
-        selected_folder = vals['selected_folder']
+        selected_file = iv.selected_file
+        selected_folder = iv.selected_folder
 
-        vals['images'][0] = load_gt(selected_file, selected_folder, vals['selected_algo'][0], False)
-        vals['images'][1] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], False)
-        vals['images'][2] = load_gt(selected_file, selected_folder, vals['selected_algo'][1], True)
-        vals['images'][3] = load_image(selected_file, selected_folder)
+        iv.images[0] = load_gt(selected_file, selected_folder, iv.selected_algo[0], False)
+        iv.images[1] = load_gt(selected_file, selected_folder, iv.selected_algo[1], False)
+        iv.images[2] = load_gt(selected_file, selected_folder, iv.selected_algo[1], True)
+        iv.images[3] = load_image(selected_file, selected_folder)
 
-        vals['processed_images'][0] = make_row(vals['images'][3], vals['images'][0], False, vals['threshold'][0], 0, vals['images'][2])
-        vals['processed_images'][1] = make_row(vals['images'][3], vals['images'][1], False, vals['threshold'][1], 1, vals['images'][2])
-        vals['processed_images'][2] = make_row(vals['images'][3], vals['images'][2], True, vals['threshold'][0])
+        iv.row[0] = make_row(iv.images[3], iv.images[0], False, iv.threshold[0], 0, iv.images[2])
+        iv.row[1] = make_row(iv.images[3], iv.images[1], False, iv.threshold[1], 1, iv.images[2])
+        iv.row[2] = make_row(iv.images[3], iv.images[2], True, iv.threshold[0])
     
     # Edit only changed file based on slider 
     else:
-        vals['processed_images'][row_index] = make_row(vals['images'][3], vals['images'][row_index], False, vals['threshold'][row_index], row_index, vals['images'][2])
+        iv.row[row_index] = make_row(iv.images[3], iv.images[row_index], False, iv.threshold[row_index], row_index, iv.images[2])
 
 output = widgets.Output()
 
@@ -333,16 +324,16 @@ def show_final(row_index, fig_size=(24, 12)):
 def update_slider( _ , row_index):
     # Update slider values in the global vals dictionary
     if row_index == 0:
-        vals['threshold'][0] = obstacle_slider0.value
+        iv.threshold[0] = obstacle_slider0.value
     else:
-        vals['threshold'][1] = obstacle_slider1.value
+        iv.threshold[1] = obstacle_slider1.value
 
     # Show the image with the updated slider values
     show_final(row_index)
 
 
 def prepare_sliders():
-    thresh = vals['threshold']
+    thresh = iv.threshold
 
     obstacle_slider0 = widgets.FloatSlider(value=thresh[0], min=0.95, max=1, step=0.0001, description='Obstacle Threshold First row', readout_format='.4f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)

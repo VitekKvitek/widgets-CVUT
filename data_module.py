@@ -19,3 +19,13 @@ sheet_data = {'df': None, # Dataframe with all of the data
               'apply_highlight': True # If highlighting should be applied
               }
 sd = SimpleNamespace(**sheet_data)
+image_values = {
+    'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
+    'row': [None, None, None],  # [alg1, alg2, default]
+    'selected_file': '01_Hanns_Klemm_Str_45_000002_000190.png',
+    'selected_folder': 'Fishyscapes_LaF',
+    'selected_algo': ['grood_logml_1000K_01adamw_tau10_resetthr1',
+                      'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
+    'threshold': [0.997, 0.997]
+}
+iv = SimpleNamespace(**image_values)
