@@ -89,7 +89,7 @@ def update_img_selector():
         pass
 # TODO call Jirka
 def select_image(*args,**kwargs):
-    print(rd.selected_img,rd.selected_img_dataset)
+    # print(rd.selected_img,rd.selected_img_dataset)
     if rd.selected_img == None or rd.selected_img_dataset == None:
         return
     update_vals(rd.algo_0, rd.algo_1, rd.selected_img_dataset, rd.selected_img)
