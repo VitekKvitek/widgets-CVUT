@@ -9,6 +9,7 @@ from IPython.display import clear_output, display, FileLink
 from settings_handler import add
 from data_module import iv
 
+
 # Color values
 obstacle_color = [255,0,0]  # Red obstacles
 road_color = [128,64,128]   # Purple road
@@ -229,12 +230,14 @@ def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
     
     # Concatenate with borders
     if use_dataset:
+        white_img = np.full_like(mask, 255)
+        
         row = np.concatenate((
             img, 
             white_border, 
             contour_w_overlay, 
-            white_border, 
-            np.full_like(mask, 255)), axis=1)
+            white_border,
+            generate_image_data(white_img)), axis=1)
     else:
         row = np.concatenate((
             normalize_score(row_index),
@@ -243,6 +246,32 @@ def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
             white_border,
             draw_differance(img, mask, def_gt, thresh)), axis=1)
     return row
+
+def generate_image_data(white_image):
+    from results_comparer import get_score_for_current_img
+    try:
+        score0, score1 = get_score_for_current_img()
+        print(f"{score0['AP']*100:0.2f} {score0['FPRat95']*100:0.2f} {score0['AP']*100:0.2f} {score0['FPRat95']*100:0.2f}")
+    except:
+        score0, score1 = "0", "0"
+
+    text = f"{score0['AP']*100:0.2f} {score0['FPRat95']*100:0.2f} {score1['AP']*100:0.2f} {score1['FPRat95']*100:0.2f}"
+    
+
+    font = cv.FONT_HERSHEY_SIMPLEX  # Choose font type
+    font_scale = 1.0  # Font scale factor that multiplies the base font size
+    font_color = (0, 0, 0)  # Font color (black in BGR format)
+    thickness = 2  # Thickness of the text
+
+    # Calculate the position to center the text
+    text_size = cv.getTextSize(text, font, font_scale, thickness)[0]
+    text_x = (white_image.shape[1] - text_size[0]) // 2
+    text_y = (white_image.shape[0] + text_size[1]) // 2
+    
+    # Put the text on the white image
+    cv.putText(white_image, text, (text_x, text_y), font, font_scale, font_color, thickness)
+    
+    return white_image
 
 def generate_name():
     base_filename = os.path.splitext(iv.selected_file)[0] #strip extension
@@ -269,15 +298,15 @@ def save_image(b):
 
 def combine_rows():
     # Create a white border of height 10 pixels
-    border_height = 10
+    border_height = 100
     white_border = np.full((border_height, iv.row[0].shape[1], iv.row[0].shape[2]), 255, dtype=iv.row[0].dtype)
     
     # Concatenate the rows with the white borders
     final_image = np.concatenate((
         iv.row[2],
-        white_border,
+        generate_image_data(white_border),
         iv.row[0],
-        white_border,
+        generate_image_data(white_border),
         iv.row[1]), axis=0)
     
     return final_image
@@ -322,7 +351,7 @@ def show_final(row_index, fig_size=(24, 12)):
     title = generate_name()
 
     with output:
-        clear_output(wait=True)
+        clear_output(wait=False) #TODO
         plt.figure(figsize=fig_size)
         plt.imshow(final_image)
         plt.axis('off')
