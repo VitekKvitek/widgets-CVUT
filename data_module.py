@@ -23,7 +23,9 @@ sheet_data = {'df': None, # Dataframe with all of the data
               }
 sd = SimpleNamespace(**sheet_data)
 image_values = {
-    'images': [None, None, None, None],  # [pred_gt, pred_gt2, default_gt, default_image]
+    'original_image': None,
+    'ground_truth': None, 
+    'predict': [None, None],
     'row': [None, None, None],  # [alg1, alg2, default]
     'selected_file': '01_Hanns_Klemm_Str_45_000002_000190.png',
     'selected_folder': 'Fishyscapes_LaF',
