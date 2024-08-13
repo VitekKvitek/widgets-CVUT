@@ -1,4 +1,4 @@
-# script for comparing per frame rusults
+# script for comparing per frame results
 import ipywidgets as widgets
 from IPython.display import display
 # Custom scripts
