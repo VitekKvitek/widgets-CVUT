@@ -141,7 +141,7 @@ def prepare_df():
     df = pd.DataFrame(data)
     # Calculates from data length of 1 row
     length_of_1_row = len(data[0])
-    # TODO? - hardcoded
+    # HARDCODED score types
     score_types = ['AP', 'FPRat95']
     # Calculates how many score types is there
     score_types_count = len(score_types)
