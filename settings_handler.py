@@ -4,40 +4,33 @@ from os.path import isfile, join, exists
 import ipywidgets as widgets
 from IPython.display import display
 # Dictionary for all widgets which values are going to be tracked
-widget_dic = {}
-description_widget_dic = {}
+widgets_tracked = {}
+descriptions_tracked = {}
 # Dictionary for all variables that are going to be tracked
 # Most of the times values that are associated with buttons but can not be accessed through the button
-variable_dic = {}
+dicts_tracked = {}
 # Default settings folder
 settings_folder = 'settings/'
 # Name of file in which the upcoming save of settings will be written
 will_save_file_name = 'unnamed_preset'
 will_load_file_name = None
 # Adds widget to the list of widgets which are going to be stored
-def add(new_object_to_remember, name, widget = True, description = False):
-    if widget:
-        if description:
-            description_widget_dic[name] = new_object_to_remember
-        else:
-            widget_dic[name] = new_object_to_remember
+def add_dict_to_settings(new_dict, name):
+    dicts_tracked[name] = new_dict
+def add_widget_to_settings(new_object_to_remember, name, description = False):
+    if description:
+        descriptions_tracked[name] = new_object_to_remember
     else:
-        variable_dic[name] = new_object_to_remember
-        pass
+        widgets_tracked[name] = new_object_to_remember
 # Function to collect widget states
 def get_widget_values():
-    widget_values_dic = {}
-    for name, widget in widget_dic.items():
-        widget_values_dic[name] = widget.value
-    return widget_values_dic
-def get_var_values():
-    var_value_dict = {}
-    for name, var in variable_dic.items():
-        var_value_dict[name] = var[0]
-    return var_value_dict
+    widget_values = {}
+    for name, widget in widgets_tracked.items():
+        widget_values[name] = widget.value
+    return widget_values
 def get_description_values():
     descriptions_dic = {}
-    for name, widget in description_widget_dic.items():
+    for name, widget in descriptions_tracked.items():
         descriptions_dic[name] = widget.description
     return descriptions_dic
 # Called by save button
@@ -45,12 +38,11 @@ def save(*args,**kwargs):
     print('start save')
     # Dump the list of values to file
     all_values = {}
-    widget_values_dic = get_widget_values()
-    var_value_dic = get_var_values()
-    description_dict = get_description_values()
-    all_values['widgets'] = widget_values_dic
-    all_values['variables'] = var_value_dic
-    all_values['description'] = description_dict
+    widget_values = get_widget_values()
+    descriptions = get_description_values()
+    all_values['widgets'] = widget_values
+    all_values['dicts'] = dicts_tracked 
+    all_values['descriptions'] = descriptions
     with open(settings_folder + will_save_file_name+'.json', 'w') as file:
         json.dump(all_values, file)
     # Updates options of uploader widget
@@ -63,17 +55,19 @@ def load_widget_states(loaded_vlaue_dict):
         if name == 'img_selector':
             img_selector_value = loaded_value
         else:
-            widget_dic[name].value = loaded_value
+            widgets_tracked[name].value = loaded_value
+    
     # Confirms newly loaded algos
     from results_comparer import make_confirmation
     make_confirmation()
     # After selecting algos, set the value to newly loaded img selector value
     # Otherwise would cause crash
-    widget_dic['img_selector'].value = img_selector_value
-    for name, loaded_value in loaded_vlaue_dict['variables'].items():
-        variable_dic[name][0] = loaded_value
-    for name, loaded_value in loaded_vlaue_dict['description'].items():
-        description_widget_dic[name].description = loaded_value
+    widgets_tracked['img_selector'].value = img_selector_value
+    for name, loaded_value in loaded_vlaue_dict['dicts'].items():
+        dicts_tracked[name] = loaded_value
+    for name, loaded_value in loaded_vlaue_dict['descriptions'].items():
+        descriptions_tracked[name].description = loaded_value
+    
     from sheet import update_sheet
     update_sheet()
     from results_comparer import select_image
