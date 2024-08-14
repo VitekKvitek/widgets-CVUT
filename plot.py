@@ -8,6 +8,8 @@ import ipywidgets as widgets
 from IPython.display import clear_output, display, FileLink
 from settings_handler import add_widget_to_settings
 from data_module import iv
+import tkinter as tk
+from tkinter import filedialog
 
 # Color values
 obstacle_color = [255,0,0]  # Red obstacles
@@ -302,16 +304,24 @@ def generate_name():
     return unique_name
 
 def save_image(b):
-    # Create 'output' directory if it doesn't exist
-    output_dir = 'output'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    root = tk.Tk()
+    root.withdraw()  # Hide the root window
+
+    # Open the file dialog to choose the directory
+    initial_dir = os.path.abspath('output')
+    directory = filedialog.askdirectory(initialdir=initial_dir, title='Select Folder')
+
+    if not directory:
+        directory = initial_dir
+
+    # Use the 'output' directory if no directory was selected
+    if not os.path.exists(directory):
+        os.makedirs(directory)  
     
     unique_name = generate_name()+".png"
-    print(unique_name)
     
     # Define the filename with the 'output' directory
-    filename = os.path.join(output_dir, unique_name)
+    filename = os.path.join(directory, unique_name)
     final_rgb = combine_rows()[:, :, [2, 1, 0]]
     cv.imwrite(filename, final_rgb)
     
