@@ -1,4 +1,5 @@
 ipywidgets
+ipykernel
 matplotlib
 numpy
 opencv-python
