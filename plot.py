@@ -217,6 +217,32 @@ def load_image(selected_file, selected_folder):
     original_image_rgb = original_image[:, :, [2, 1, 0]]
     return original_image_rgb
 
+def make_legend(target_h, target_w):
+    
+    legend_path = 'legend.png'
+    legend_image = np.full((target_h, target_w, 3), 255, dtype=np.uint8)
+    legend = cv.imread(legend_path, cv.IMREAD_UNCHANGED)
+    
+    # Get dimensions of the white image (target) and legend
+    legend_h, legend_w = legend.shape[:2]
+
+    # Determine the scaling factor to maintain aspect ratio
+    scale_factor = min(target_w / legend_w, target_h / legend_h)
+
+    
+    # Resize the legend image while maintaining aspect ratio
+    new_size = (int(legend_w * scale_factor), int(legend_h * scale_factor))
+    legend_resized = cv.resize(legend, new_size, interpolation=cv.INTER_AREA)
+
+    # Calculate top-left corner to place the legend in the center of the white image
+    x_offset = (target_w - new_size[0]) // 2
+    y_offset = (target_h - new_size[1]) // 2
+
+    # Overlay the resized legend onto the white image
+    legend_image[y_offset:y_offset+new_size[1], x_offset:x_offset+new_size[0]] = legend_resized
+    return legend_image[:, :, [2, 1, 0]]
+
+
 # Generate all images for one row
 def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
     
@@ -230,14 +256,13 @@ def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
     
     # Concatenate with borders
     if use_dataset:
-        white_img = np.full_like(mask, 255)
-        
+        target_h, target_w = img.shape[:2]
         row = np.concatenate((
             img, 
             white_border, 
             contour_w_overlay, 
             white_border,
-            white_img), axis=1)
+            make_legend(target_h, target_w)), axis=1)
     else:
         row = np.concatenate((
             normalize_score(row_index),
@@ -252,15 +277,15 @@ def generate_image_text(border_height, border_width, num_channels, row_index):
     try:
         score0, score1 = get_score_for_current_img()
         if row_index == 0:
-            text = f"{iv.selected_algo[0]} | AP: {score0['AP']*100:0.2f} | FPRat95: {score0['FPRat95']*100:0.2f} | Threshold: {iv.threshold[0]}"
+            text = f"{iv.selected_algo[0]} | AP: {score0['AP']*100:0.2f} | FPRat95: {score0['FPRat95']*100:0.2f} | Threshold: {iv.threshold[0]:0.5}"
         else:
-            text = f"{iv.selected_algo[1]} | AP: {score1['AP']*100:0.2f} | FPRat95: {score1['FPRat95']*100:0.2f} | Threshold: {iv.threshold[1]}"
+            text = f"{iv.selected_algo[1]} | AP: {score1['AP']*100:0.2f} | FPRat95: {score1['FPRat95']*100:0.2f} | Threshold: {iv.threshold[1]:0.5}"
     except:
         text = "Score not defined"
 
     # Create a white image inside the function
     white_image = np.full((border_height, border_width, num_channels), 255, dtype=np.uint8)
-
+    
     
     font = cv.FONT_HERSHEY_SIMPLEX  # Choose font type
     font_scale = 1.0  # Font scale factor that multiplies the base font size
@@ -301,7 +326,6 @@ def save_image(b):
         display(FileLink(filename))
 
 def combine_rows():
-    # Create a white border of height 10 pixels
     border_height = 100
     border_width = iv.row[0].shape[1]
     num_channels = iv.row[0].shape[2]
@@ -326,8 +350,6 @@ def update_vals(alg0,alg1,folder,dataset):
 
 def save_rows(row_index):
     
-    
-
     # New files for everything
     if row_index > 1:
         selected_file = iv.selected_file
@@ -356,7 +378,7 @@ def show_final(row_index, fig_size=(24, 12)):
     title = generate_name()
 
     with output:
-        clear_output(wait=False) #TODO
+        clear_output(wait=True)
         plt.figure(figsize=fig_size)
         plt.imshow(final_image)
         plt.axis('off')
