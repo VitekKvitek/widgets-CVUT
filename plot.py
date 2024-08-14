@@ -9,7 +9,6 @@ from IPython.display import clear_output, display, FileLink
 from settings_handler import add
 from data_module import iv
 
-
 # Color values
 obstacle_color = [255,0,0]  # Red obstacles
 road_color = [128,64,128]   # Purple road
@@ -24,7 +23,6 @@ obstacle_cont_color = (0,0,255)  # Blue for obstacle contours
 road_cont_color = (0,255,0)   # Green for road contours
 thickness = 3
 
-
 def create_mask(original_gt, use_dataset, threshold):
     #road_threshold = 0.4
     void_mask = None
@@ -38,7 +36,6 @@ def create_mask(original_gt, use_dataset, threshold):
         obstacle_mask = (original_gt > threshold) 
         
     return void_mask, obstacle_mask
-
 
 def draw_overlay(opacity, original_image, original_gt, use_dataset, threshold):
 
@@ -197,7 +194,6 @@ def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
     # Load ground truth
     original_gt = cv.imread(original_gt_path) if use_dataset else np.load(original_gt_path)
     assert original_gt is not None, f"original_gt could not be read from {original_gt_path}"    
-
     return original_gt
 
 def get_base_folder(selected_folder):
@@ -229,7 +225,6 @@ def make_legend(target_h, target_w):
     # Determine the scaling factor to maintain aspect ratio
     scale_factor = min(target_w / legend_w, target_h / legend_h)
 
-    
     # Resize the legend image while maintaining aspect ratio
     new_size = (int(legend_w * scale_factor), int(legend_h * scale_factor))
     legend_resized = cv.resize(legend, new_size, interpolation=cv.INTER_AREA)
@@ -241,7 +236,6 @@ def make_legend(target_h, target_w):
     # Overlay the resized legend onto the white image
     legend_image[y_offset:y_offset+new_size[1], x_offset:x_offset+new_size[0]] = legend_resized
     return legend_image[:, :, [2, 1, 0]]
-
 
 # Generate all images for one row
 def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
@@ -281,11 +275,10 @@ def generate_image_text(border_height, border_width, num_channels, row_index):
         else:
             text = f"{iv.selected_algo[1]} | AP: {score1['AP']*100:0.2f} | FPRat95: {score1['FPRat95']*100:0.2f} | Threshold: {iv.threshold[1]:0.5}"
     except:
-        text = "Score not defined"
+        text = "Score was not load properly"
 
     # Create a white image inside the function
     white_image = np.full((border_height, border_width, num_channels), 255, dtype=np.uint8)
-    
     
     font = cv.FONT_HERSHEY_SIMPLEX  # Choose font type
     font_scale = 1.0  # Font scale factor that multiplies the base font size
@@ -371,7 +364,6 @@ def save_rows(row_index):
 output = widgets.Output()
 
 def show_final(row_index, fig_size=(24, 12)):
-    
     save_rows(row_index)
     
     final_image = combine_rows()
@@ -394,7 +386,6 @@ def update_slider( _ , row_index):
 
     # Show the image with the updated slider values
     show_final(row_index)
-
 
 def prepare_sliders():
     thresh = iv.threshold
