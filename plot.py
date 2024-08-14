@@ -378,7 +378,6 @@ def show_final(row_index, fig_size=(24, 12)):
     
     final_image = combine_rows()
     title = generate_name()
-    time_func(True)
     with output:
         clear_output(wait=False)
         plt.figure(figsize=fig_size)
@@ -386,10 +385,8 @@ def show_final(row_index, fig_size=(24, 12)):
         plt.axis('off')
         plt.title(title)
         plt.show()
-    time_func(False)
 
 def update_slider( _ , row_index):
-    
     
     # Update slider values in the global image values dictionary
     if row_index == 0:
@@ -427,13 +424,3 @@ def display_image_settings():
             output,
             save_button)
 
-start_time = None
-def time_func(start):
-    global start_time
-    import time
-    if(start):
-        start_time = time.time()
-    else:
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        print(elapsed_time)
