@@ -237,7 +237,7 @@ def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
             white_border, 
             contour_w_overlay, 
             white_border,
-            generate_image_data(white_img)), axis=1)
+            white_img), axis=1)
     else:
         row = np.concatenate((
             normalize_score(row_index),
@@ -247,17 +247,21 @@ def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
             draw_differance(img, mask, def_gt, thresh)), axis=1)
     return row
 
-def generate_image_data(white_image):
+def generate_image_text(border_height, border_width, num_channels, row_index):
     from results_comparer import get_score_for_current_img
     try:
         score0, score1 = get_score_for_current_img()
-        print(f"{score0['AP']*100:0.2f} {score0['FPRat95']*100:0.2f} {score0['AP']*100:0.2f} {score0['FPRat95']*100:0.2f}")
+        if row_index == 0:
+            text = f"{iv.selected_algo[0]} | AP: {score0['AP']*100:0.2f} | FPRat95: {score0['FPRat95']*100:0.2f} | Threshold: {iv.threshold[0]}"
+        else:
+            text = f"{iv.selected_algo[1]} | AP: {score1['AP']*100:0.2f} | FPRat95: {score1['FPRat95']*100:0.2f} | Threshold: {iv.threshold[1]}"
     except:
-        score0, score1 = "0", "0"
+        text = "Score not defined"
 
-    text = f"{score0['AP']*100:0.2f} {score0['FPRat95']*100:0.2f} {score1['AP']*100:0.2f} {score1['FPRat95']*100:0.2f}"
+    # Create a white image inside the function
+    white_image = np.full((border_height, border_width, num_channels), 255, dtype=np.uint8)
+
     
-
     font = cv.FONT_HERSHEY_SIMPLEX  # Choose font type
     font_scale = 1.0  # Font scale factor that multiplies the base font size
     font_color = (0, 0, 0)  # Font color (black in BGR format)
@@ -299,14 +303,15 @@ def save_image(b):
 def combine_rows():
     # Create a white border of height 10 pixels
     border_height = 100
-    white_border = np.full((border_height, iv.row[0].shape[1], iv.row[0].shape[2]), 255, dtype=iv.row[0].dtype)
+    border_width = iv.row[0].shape[1]
+    num_channels = iv.row[0].shape[2]
     
     # Concatenate the rows with the white borders
     final_image = np.concatenate((
         iv.row[2],
-        generate_image_data(white_border),
+        generate_image_text(border_height, border_width, num_channels, 0),
         iv.row[0],
-        generate_image_data(white_border),
+        generate_image_text(border_height, border_width, num_channels, 1),
         iv.row[1]), axis=0)
     
     return final_image
