@@ -8,7 +8,8 @@ import ipywidgets as widgets
 from IPython.display import clear_output, display, FileLink
 from settings_handler import add_widget_to_settings
 from data_module import iv
-
+import tkinter as tk
+from tkinter import filedialog
 
 # Color values
 obstacle_color = [255,0,0]  # Red obstacles
@@ -24,26 +25,24 @@ obstacle_cont_color = (0,0,255)  # Blue for obstacle contours
 road_cont_color = (0,255,0)   # Green for road contours
 thickness = 3
 
-
-def create_mask(original_gt, use_dataset, threshold):
+def create_mask(gt, use_dataset, threshold):
     #road_threshold = 0.4
     void_mask = None
 
     if(use_dataset):
         #road_mask = (original_gt == 1)
-        obstacle_mask = (original_gt == 0)
-        void_mask = (original_gt == 255)
+        obstacle_mask = (gt == 0)
+        void_mask = (gt == 255)
     else:
         #road_mask = (original_gt <= road_threshold)  
-        obstacle_mask = (original_gt > threshold) 
+        obstacle_mask = (gt > threshold) 
         
     return void_mask, obstacle_mask
 
+def draw_overlay(opacity, original_image, gt, use_dataset, threshold):
 
-def draw_overlay(opacity, original_image, original_gt, use_dataset, threshold):
-
-    assert original_image.shape[:2] == original_gt.shape[:2], "Images must have the same dimensions"
-    void_mask, obstacle_mask = create_mask(original_gt, use_dataset, threshold)
+    assert original_image.shape[:2] == gt.shape[:2], "Images must have the same dimensions"
+    void_mask, obstacle_mask = create_mask(gt, use_dataset, threshold)
 
     # Create overlays
     #road_overlay = np.zeros_like(original_image)
@@ -73,17 +72,17 @@ def draw_overlay(opacity, original_image, original_gt, use_dataset, threshold):
     return combined_image
 
 def draw_contours(original_image, original_gt, dataset, threshold):
-    road_threshold = 0.4
+    #road_threshold = 0.4
 
     if(dataset):
         # Convert image to grayscale
         imgray = cv.cvtColor(original_gt, cv.COLOR_BGR2GRAY)
         # Apply thresholding
-        _, road_thresh = cv.threshold(imgray, 1, 255, 0)
+        #_, road_thresh = cv.threshold(imgray, 1, 255, 0)
         _, obstacle_thresh = cv.threshold(imgray, 0, 255, 0)
     else:
         # Convert normalized ground truth to binary images
-        road_thresh = (original_gt >= road_threshold).astype(np.uint8) * 255 
+        #road_thresh = (original_gt >= road_threshold).astype(np.uint8) * 255 
         obstacle_thresh = (original_gt < threshold).astype(np.uint8) * 255 
 
     # Find contours
@@ -97,7 +96,7 @@ def draw_contours(original_image, original_gt, dataset, threshold):
     
     return contours_image
     
-def draw_differance(img, gt, def_gt, thresh):
+def draw_differance(original_image, gt, def_gt, thresh):
     # Mozna ziskat obstacle mask z draw conture/ overlay TODO?
     _, obstacle_mask = create_mask(gt, False, thresh)
     
@@ -114,7 +113,7 @@ def draw_differance(img, gt, def_gt, thresh):
     # Create black mask
     black_mask = np.all(combined_image == [0, 0, 0], axis=-1)
 
-    grayscale_image = np.dot(img[..., :3], [0.299, 0.587, 0.114])
+    grayscale_image = np.dot(original_image[..., :3], [0.299, 0.587, 0.114])
     grayscale_image_expanded = np.stack([grayscale_image]*3, axis=-1)
 
     # Create a copy of the combined image to add the grayscale image
@@ -184,6 +183,11 @@ def decontract(name):
             long_name = None
     return long_name
 
+def get_base_folder(selected_folder):
+    # Determine folder path
+    base_folder_path = 'data/export/datasets/' + selected_folder + '/test/'
+    return base_folder_path
+
 def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
     # Determine gt path
     if use_dataset:        
@@ -197,18 +201,12 @@ def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
     # Load ground truth
     original_gt = cv.imread(original_gt_path) if use_dataset else np.load(original_gt_path)
     assert original_gt is not None, f"original_gt could not be read from {original_gt_path}"    
-
     return original_gt
-
-def get_base_folder(selected_folder):
-    # Determine folder path
-    base_folder_path = 'data/export/datasets/' + selected_folder + '/test/'
-    return base_folder_path
 
 def load_image(selected_file, selected_folder):
     # Load original image
-    imgs_folder_path = os.path.join(get_base_folder(selected_folder), 'imgs')
-    original_image_path = os.path.join(imgs_folder_path, selected_file)
+    images_folder_path = os.path.join(get_base_folder(selected_folder), 'imgs')
+    original_image_path = os.path.join(images_folder_path, selected_file)
     #print(original_image_path)
     original_image = cv.imread(original_image_path)
     assert original_image is not None, f"original_image could not be read from {original_image_path}"
@@ -229,7 +227,6 @@ def make_legend(target_h, target_w):
     # Determine the scaling factor to maintain aspect ratio
     scale_factor = min(target_w / legend_w, target_h / legend_h)
 
-    
     # Resize the legend image while maintaining aspect ratio
     new_size = (int(legend_w * scale_factor), int(legend_h * scale_factor))
     legend_resized = cv.resize(legend, new_size, interpolation=cv.INTER_AREA)
@@ -242,36 +239,6 @@ def make_legend(target_h, target_w):
     legend_image[y_offset:y_offset+new_size[1], x_offset:x_offset+new_size[0]] = legend_resized
     return legend_image[:, :, [2, 1, 0]]
 
-
-# Generate all images for one row
-def make_row(img, mask, use_dataset, thresh, row_index = None, def_gt = None):
-    
-    opacity_overlay = draw_overlay(opacity, img, mask, use_dataset, thresh)
-    contour_w_overlay = draw_contours(opacity_overlay, mask, use_dataset, thresh)
-    #overlay_100 = draw_overlay(1, img, mask, use_dataset, thresh)
-    
-    # Create a white border of width 10 pixels
-    border_width = 10
-    white_border = np.full((img.shape[0], border_width, img.shape[2]), 255, dtype=img.dtype)
-    
-    # Concatenate with borders
-    if use_dataset:
-        target_h, target_w = img.shape[:2]
-        row = np.concatenate((
-            img, 
-            white_border, 
-            contour_w_overlay, 
-            white_border,
-            make_legend(target_h, target_w)), axis=1)
-    else:
-        row = np.concatenate((
-            normalize_score(row_index),
-            white_border,
-            opacity_overlay,
-            white_border,
-            draw_differance(img, mask, def_gt, thresh)), axis=1)
-    return row
-
 def generate_image_text(border_height, border_width, num_channels, row_index):
     from results_comparer import get_score_for_current_img
     try:
@@ -281,11 +248,10 @@ def generate_image_text(border_height, border_width, num_channels, row_index):
         else:
             text = f"{iv.selected_algo[1]} | AP: {score1['AP']*100:0.2f} | FPRat95: {score1['FPRat95']*100:0.2f} | Threshold: {iv.threshold[1]:0.5}"
     except:
-        text = "Score not defined"
+        text = "Score was not load properly"
 
     # Create a white image inside the function
     white_image = np.full((border_height, border_width, num_channels), 255, dtype=np.uint8)
-    
     
     font = cv.FONT_HERSHEY_SIMPLEX  # Choose font type
     font_scale = 1.0  # Font scale factor that multiplies the base font size
@@ -308,17 +274,54 @@ def generate_name():
     unique_name = f"{contract(iv.selected_folder)}-{base_filename}-{iv.selected_algo[0][-15:]}-{iv.selected_algo[1][-15:]}"
     return unique_name
 
+# Generate all images for one row
+def make_row(original_image, mask, use_dataset, thresh, row_index = None, def_gt = None):
+    
+    opacity_overlay = draw_overlay(opacity, original_image, mask, use_dataset, thresh)
+    contour_w_overlay = draw_contours(opacity_overlay, mask, use_dataset, thresh)
+    #overlay_100 = draw_overlay(1, img, mask, use_dataset, thresh)
+    
+    # Create a white border of width 10 pixels
+    border_width = 10
+    white_border = np.full((original_image.shape[0], border_width, original_image.shape[2]), 255, dtype=original_image.dtype)
+    
+    # Concatenate with borders
+    if use_dataset:
+        target_h, target_w = original_image.shape[:2]
+        row = np.concatenate((
+            original_image, 
+            white_border, 
+            contour_w_overlay, 
+            white_border,
+            make_legend(target_h, target_w)), axis=1)
+    else:
+        row = np.concatenate((
+            normalize_score(row_index),
+            white_border,
+            opacity_overlay,
+            white_border,
+            draw_differance(original_image, mask, def_gt, thresh)), axis=1)
+    return row
+
 def save_image(b):
-    # Create 'output' directory if it doesn't exist
-    output_dir = 'output'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    root = tk.Tk()
+    root.withdraw()  # Hide the root window
+
+    # Open the file dialog to choose the directory
+    initial_dir = os.path.abspath('output')
+    directory = filedialog.askdirectory(initialdir=initial_dir, title='Select Folder')
+
+    if not directory:
+        directory = initial_dir
+
+    # Use the 'output' directory if no directory was selected
+    if not os.path.exists(directory):
+        os.makedirs(directory)  
     
     unique_name = generate_name()+".png"
-    print(unique_name)
     
     # Define the filename with the 'output' directory
-    filename = os.path.join(output_dir, unique_name)
+    filename = os.path.join(directory, unique_name)
     final_rgb = combine_rows()[:, :, [2, 1, 0]]
     cv.imwrite(filename, final_rgb)
     
@@ -371,14 +374,12 @@ def save_rows(row_index):
 output = widgets.Output()
 
 def show_final(row_index, fig_size=(24, 12)):
-    
     save_rows(row_index)
     
     final_image = combine_rows()
     title = generate_name()
-
     with output:
-        clear_output(wait=True)
+        clear_output(wait=False)
         plt.figure(figsize=fig_size)
         plt.imshow(final_image)
         plt.axis('off')
@@ -386,6 +387,7 @@ def show_final(row_index, fig_size=(24, 12)):
         plt.show()
 
 def update_slider( _ , row_index):
+    
     # Update slider values in the global image values dictionary
     if row_index == 0:
         iv.threshold[0] = obstacle_slider0.value
@@ -394,7 +396,6 @@ def update_slider( _ , row_index):
 
     # Show the image with the updated slider values
     show_final(row_index)
-
 
 def prepare_sliders():
     thresh = iv.threshold
@@ -422,3 +423,4 @@ def display_image_settings():
             obstacle_slider1, 
             output,
             save_button)
+
