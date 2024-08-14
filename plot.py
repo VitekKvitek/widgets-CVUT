@@ -395,7 +395,10 @@ def update_slider( _ , row_index):
         iv.threshold[1] = obstacle_slider1.value
 
     # Show the image with the updated slider values
-    show_final(row_index)
+    try:
+        show_final(row_index)
+    except:
+        pass
 
 def prepare_sliders():
     thresh = iv.threshold

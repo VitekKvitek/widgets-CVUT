@@ -47,6 +47,11 @@ def get_description_values():
     for name, widget in descriptions_tracked.items():
         descriptions_dic[name] = widget.description
     return descriptions_dic
+def get_styles_values():
+    styles_dic = {}
+    for name, widget in styles_tracked.items():
+        styles_dic[name] = widget.button_style
+    return styles_dic
 # Called by save button
 def save(*args,**kwargs):
     # Dump the list of values to file
@@ -54,10 +59,12 @@ def save(*args,**kwargs):
     widget_values = get_widget_values()
     ordered_widgets_values = get_ordered_widget_values()
     descriptions = get_description_values()
+    styles = get_styles_values()
     all_values['widgets'] = widget_values
     all_values['ordered_widgets'] = ordered_widgets_values
     all_values['vars'] = vars_tracked
     all_values['descriptions'] = descriptions
+    all_values['styles'] = styles
     with open(settings_folder + will_save_file_name+'.json', 'w') as file:
         json.dump(all_values, file)
     # Updates options of uploader widget
@@ -77,7 +84,8 @@ def load_widget_states(loaded_vlaue_dict):
         vars_tracked[name] = loaded_value
     for name, loaded_value in loaded_vlaue_dict['descriptions'].items():
         descriptions_tracked[name].description = loaded_value
-    
+    for name, loaded_value in loaded_vlaue_dict['styles'].items():
+        styles_tracked[name].button_style = loaded_value
     from results_comparer import make_confirmation
     # Confirms newly loaded algos
     # After selecting algos, set the value to newly loaded img selector value
