@@ -4,7 +4,7 @@ from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
 from plot import update_vals
-from settings_handler import add
+from settings_handler import add_widget_to_settings
 from data_module import rd
 
 # Function for setting row index list which will be showed in algo selector
@@ -142,14 +142,14 @@ def prepare_algo_selectors():
         disabled=False,
     )
     algo_selector_1.observe(load_data_1, names='value')
-    add(algo_selector_1, ' algo_selector_1')
+    add_widget_to_settings(algo_selector_1, ' algo_selector_1')
     algo_selector_2 = widgets.Dropdown(
         options=[],
         description='Algo 2:',
         disabled=False,
     )
     algo_selector_2.observe(load_data_2, names='value')
-    add(algo_selector_2, 'algo_selector_2')
+    add_widget_to_settings(algo_selector_2, 'algo_selector_2')
     return algo_selector_1, algo_selector_2
 # Prepares buttons to choose diffrence type by which will be the images sorted
 def prepare_difference_type_buttons():    
@@ -169,7 +169,7 @@ def prepare_img_selector():
         disabled=False,
     )
     img_selector.observe(set_selected_img, names='value')
-    add(img_selector, 'img_selector')
+    add_widget_to_settings(img_selector, 'img_selector')
     return img_selector
 def prepare_dataset_selector():
     dataset_selector = widgets.Dropdown(
@@ -178,7 +178,7 @@ def prepare_dataset_selector():
         disabled = False
     )
     dataset_selector.observe(update_selected_dataset, names='value')
-    add(dataset_selector, 'data_selector')
+    add_widget_to_settings(dataset_selector, 'data_selector')
     return dataset_selector
 def prepare_confirm_button():
     confirm_button = widgets.Button(description="Confirm algs")

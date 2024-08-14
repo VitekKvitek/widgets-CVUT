@@ -6,7 +6,7 @@ from os.path import isfile, join
 import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from IPython.display import clear_output, display, FileLink
-from settings_handler import add
+from settings_handler import add_widget_to_settings
 from data_module import iv
 
 # Color values
@@ -393,12 +393,12 @@ def prepare_sliders():
     obstacle_slider0 = widgets.FloatSlider(value=thresh[0], min=0.95, max=0.99999, step=0.00001, description='Obstacle Threshold First row', readout_format='.5f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
-    add(obstacle_slider0, 'obstacle_slider0')
+    add_widget_to_settings(obstacle_slider0, 'obstacle_slider0')
 
     obstacle_slider1 = widgets.FloatSlider(value=thresh[1], min=0.95, max=0.99999, step=0.00001, description='Obstacle Threshold Second row', readout_format='.5f', 
                                            style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
-    add(obstacle_slider1,'obstacle_slider1')
+    add_widget_to_settings(obstacle_slider1,'obstacle_slider1')
     return obstacle_slider0, obstacle_slider1
 obstacle_slider0, obstacle_slider1 = prepare_sliders()
 

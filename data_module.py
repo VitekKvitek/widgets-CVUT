@@ -1,5 +1,6 @@
 # In this script data are stored
 from types import SimpleNamespace
+from settings_handler import add_var_to_settings
 
 sheet_data = {'df': None, # Dataframe with all of the data
               'display_df': None, # Dataframe version which will be displayed - after black list and sorting
@@ -11,6 +12,9 @@ sheet_data = {'df': None, # Dataframe with all of the data
               'apply_highlight': True # If highlighting should be applied
               }
 sd = SimpleNamespace(**sheet_data)
+add_var_to_settings(sd.ascend_AP, 'ascend_AP')
+add_var_to_settings(sd.ascend_FPRat95, 'ascend_FPRat95')
+add_var_to_settings(sd.average_type, 'average_type')
 
 res_data ={'algo_0' : None,
            'algo_1': None,
