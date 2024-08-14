@@ -39,3 +39,10 @@ image_values = {
     'threshold': [0.997, 0.997]
 }
 iv = SimpleNamespace(**image_values)
+
+name_mapping = {
+    "Fishyscapes_LaF": 'FS',
+    "RoadAnomaly": 'RA',
+    "RoadObstacles": 'RO',
+    "RoadObstacles21": 'RO21A'
+}
