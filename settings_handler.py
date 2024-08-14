@@ -3,10 +3,13 @@ from os import listdir,makedirs
 from os.path import isfile, join, exists
 import ipywidgets as widgets
 from IPython.display import display
-from types import SimpleNamespace
+from collections import OrderedDict
 # Dictionary for all widgets which values are going to be tracked
 widgets_tracked = {}
 descriptions_tracked = {}
+styles_tracked = {}
+# Widgets which are stored in order
+orderred_widgets_tracked = OrderedDict()
 # Dictionary for all variables that are going to be tracked
 # Most of the times values that are associated with buttons but can not be accessed through the button
 vars_tracked = {}
@@ -18,17 +21,27 @@ will_load_file_name = None
 # Adds widget to the list of widgets which are going to be stored
 def add_var_to_settings(new_var, name):
     vars_tracked[name] = new_var
-def add_widget_to_settings(new_object_to_remember, name, description = False):
+def add_widget_to_settings(new_tracked_widget, name, description = False, style = False):
     if description:
-        descriptions_tracked[name] = new_object_to_remember
+        descriptions_tracked[name] = new_tracked_widget
+    elif style:
+        styles_tracked[name] = new_tracked_widget
     else:
-        widgets_tracked[name] = new_object_to_remember
+        widgets_tracked[name] = new_tracked_widget
+def add_widget_to_ord_settings(new_tracked_widget, name, order):
+    orderred_widgets_tracked[name] = (new_tracked_widget, order)
 # Function to collect widget states
 def get_widget_values():
     widget_values = {}
     for name, widget in widgets_tracked.items():
         widget_values[name] = widget.value
     return widget_values
+def get_ordered_widget_values():
+    sorted_ord_widg = OrderedDict(sorted(orderred_widgets_tracked.items(), key=lambda item: item[1][1]))
+    widget_values = {}
+    for name, widget_tuple in sorted_ord_widg.items():
+        widget_values[name] = widget_tuple[0].value
+    return widget_values 
 def get_description_values():
     descriptions_dic = {}
     for name, widget in descriptions_tracked.items():
@@ -39,8 +52,10 @@ def save(*args,**kwargs):
     # Dump the list of values to file
     all_values = {}
     widget_values = get_widget_values()
+    ordered_widgets_values = get_ordered_widget_values()
     descriptions = get_description_values()
     all_values['widgets'] = widget_values
+    all_values['ordered_widgets'] = ordered_widgets_values
     all_values['vars'] = vars_tracked
     all_values['descriptions'] = descriptions
     with open(settings_folder + will_save_file_name+'.json', 'w') as file:
@@ -52,11 +67,12 @@ def load_widget_states(loaded_vlaue_dict):
     # Variable which is used in mechanism for setting img selector value
     img_selector_value = None
     for name,loaded_value in loaded_vlaue_dict['widgets'].items():
+        widgets_tracked[name].value = loaded_value
+    for name,loaded_value in loaded_vlaue_dict['ordered_widgets'].items():
         if name == 'img_selector':
             img_selector_value = loaded_value
         else:
-            widgets_tracked[name].value = loaded_value
-            
+            orderred_widgets_tracked[name][0].value = loaded_value 
     for name, loaded_value in loaded_vlaue_dict['vars'].items():
         vars_tracked[name] = loaded_value
     for name, loaded_value in loaded_vlaue_dict['descriptions'].items():
@@ -67,7 +83,7 @@ def load_widget_states(loaded_vlaue_dict):
     # After selecting algos, set the value to newly loaded img selector value
     # Otherwise would cause crash
     make_confirmation()
-    widgets_tracked['img_selector'].value = img_selector_value
+    orderred_widgets_tracked['img_selector'][0].value = img_selector_value
     
     from sheet import update_sheet
     update_sheet()

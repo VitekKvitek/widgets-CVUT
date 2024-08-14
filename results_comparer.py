@@ -4,23 +4,23 @@ from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
 from plot import update_vals
-from settings_handler import add_widget_to_settings
+from settings_handler import add_widget_to_ord_settings
 from data_module import rd
 
 # Function for setting row index list which will be showed in algo selector
 def import_sheet_row_index(index_list):
     algo_list = index_list
+    selector_0_value = algo_selector_0.value
     selector_1_value = algo_selector_1.value
-    selector_2_value = algo_selector_2.value
+    algo_selector_0.options = algo_list
     algo_selector_1.options = algo_list
-    algo_selector_2.options = algo_list
     # TODO slow
     # System for displaying old selection
     # Otherwise new option would be picked
+    if selector_0_value in algo_list:
+        algo_selector_0.value = selector_0_value
     if selector_1_value in algo_list:
         algo_selector_1.value = selector_1_value
-    if selector_2_value in algo_list:
-        algo_selector_2.value = selector_2_value
 def import_sheet_col_index(index_list):
     dataset_list = index_list
     folder_selector_value = dataset_selector.value
@@ -40,16 +40,16 @@ def compare_results():
     if rd.data_0 == None or rd.data_1 == None:
         return
     for dataset_key in rd.data_0.keys():
-        dataset_algo_1 = rd.data_0[dataset_key]
-        dataset_algo_2 = rd.data_1[dataset_key]
+        dataset_algo_0 = rd.data_0[dataset_key]
+        dataset_algo_1 = rd.data_1[dataset_key]
         # Calculate the absolute differences and store them in a new dictionary
         differences = {}
-        for key in dataset_algo_1:
+        for key in dataset_algo_0:
             # Extract the value for the given difference type from both datasets
+            value_0 = dataset_algo_0[key][rd.difference_type]
             value_1 = dataset_algo_1[key][rd.difference_type]
-            value_2 = dataset_algo_2[key][rd.difference_type]
             # Calculate the absolute difference between the values
-            difference = abs(value_1 - value_2)
+            difference = abs(value_0 - value_1)
             # Store the difference in the dictionary with the key
             differences[key] = difference
         # Sort the keys based on the differences in descending order
@@ -90,19 +90,18 @@ def update_img_selector():
         pass
 def update_score_labels():
     # Get scores for the current image using the provided function
-    algo_1_score, algo_2_score = get_score_for_current_img()
+    algo_0_score, algo_1_score = get_score_for_current_img()
 
     # Calculate scores for Algorithm 1 and Algorithm 2
+    alg_0_AP = algo_0_score['AP'] * 100
+    alg_0_FPRat95 = algo_0_score['FPRat95'] * 100
+
     alg_1_AP = algo_1_score['AP'] * 100
     alg_1_FPRat95 = algo_1_score['FPRat95'] * 100
 
-    alg_2_AP = algo_2_score['AP'] * 100
-    alg_2_FPRat95 = algo_2_score['FPRat95'] * 100
-
     # Create a readable string with spaces and labels
-    #TODO pak to jeste dat k tomu dalsimu update_vals
     algo_1_label.value = (
-        f" AP: {alg_1_AP:.2f} , FPRat95: {alg_1_FPRat95:.2f}"
+        f" AP: {alg_0_AP:.2f} , FPRat95: {alg_0_FPRat95:.2f}"
     )
     # Apply layout styling
     algo_1_label.layout = widgets.Layout(
@@ -113,7 +112,7 @@ def update_score_labels():
         border='solid 1px black'
     )   
     algo_2_label.value = (
-        f"AP: {alg_2_AP:.2f} , FPRat95: {alg_2_FPRat95:.2f}"
+        f"AP: {alg_1_AP:.2f} , FPRat95: {alg_1_FPRat95:.2f}"
     )
     # Apply layout styling
     algo_2_label.layout = widgets.Layout(
@@ -142,14 +141,14 @@ def prepare_algo_selectors():
         disabled=False,
     )
     algo_selector_1.observe(load_data_1, names='value')
-    add_widget_to_settings(algo_selector_1, ' algo_selector_1')
+    add_widget_to_ord_settings(algo_selector_1, ' algo_selector_1', 0 )
     algo_selector_2 = widgets.Dropdown(
         options=[],
         description='Algo 2:',
         disabled=False,
     )
     algo_selector_2.observe(load_data_2, names='value')
-    add_widget_to_settings(algo_selector_2, 'algo_selector_2')
+    add_widget_to_ord_settings(algo_selector_2, 'algo_selector_2', 1)
     return algo_selector_1, algo_selector_2
 # Prepares buttons to choose diffrence type by which will be the images sorted
 def prepare_difference_type_buttons():    
@@ -169,7 +168,7 @@ def prepare_img_selector():
         disabled=False,
     )
     img_selector.observe(set_selected_img, names='value')
-    add_widget_to_settings(img_selector, 'img_selector')
+    add_widget_to_ord_settings(img_selector, 'img_selector', 3)
     return img_selector
 def prepare_dataset_selector():
     dataset_selector = widgets.Dropdown(
@@ -178,7 +177,7 @@ def prepare_dataset_selector():
         disabled = False
     )
     dataset_selector.observe(update_selected_dataset, names='value')
-    add_widget_to_settings(dataset_selector, 'data_selector')
+    add_widget_to_ord_settings(dataset_selector, 'data_selector', 2)
     return dataset_selector
 def prepare_confirm_button():
     confirm_button = widgets.Button(description="Confirm algs")
@@ -196,8 +195,8 @@ def prepare_labels():
     # add(algo_2_label, 'algo_2_label')
     return algo_1_label, algo_2_label
 def display_controls():
-    hbox_alg_selector = widgets.HBox([algo_selector_1,
-                                  algo_selector_2,
+    hbox_alg_selector = widgets.HBox([algo_selector_0,
+                                  algo_selector_1,
                                   confirm_button])
     hbox_img_selector = widgets.HBox([dataset_selector,
                                       img_selector,
@@ -207,7 +206,7 @@ def display_controls():
             hbox_img_selector,
             hbox_alg_selector,
             hbox_labels)
-algo_selector_1, algo_selector_2 = prepare_algo_selectors()
+algo_selector_0, algo_selector_1 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
 confirm_button = prepare_confirm_button()
 dataset_selector = prepare_dataset_selector()
