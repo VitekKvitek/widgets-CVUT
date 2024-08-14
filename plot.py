@@ -226,9 +226,9 @@ def generate_image_text(border_height, border_width, num_channels, row_index):
     white_image = np.full((border_height, border_width, num_channels), 255, dtype=np.uint8)
     
     font = cv.FONT_HERSHEY_SIMPLEX  # Choose font type
-    font_scale = 2.0  # Font scale factor that multiplies the base font size
+    font_scale = 1.0  # Font scale factor that multiplies the base font size
     font_color = (0, 0, 0)  # Font color (black in BGR format)
-    thickness = 3  # Thickness of the text
+    thickness = 2  # Thickness of the text
 
     # Calculate the position to center the text
     text_size = cv.getTextSize(text, font, font_scale, thickness)[0]
@@ -391,8 +391,8 @@ def prepare_save_image():
 save_button = prepare_save_image()
 
 def display_image_settings():
-    display(obstacle_slider0,  
+    display(output,
+            obstacle_slider0,  
             obstacle_slider1, 
-            output,
             save_button)
 
