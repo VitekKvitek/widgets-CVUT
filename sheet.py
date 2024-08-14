@@ -7,7 +7,7 @@ from IPython.display import display, HTML
 # Custom scripts
 from results_loader import read_all_algo_jsons
 import results_comparer
-from settings_handler import add
+from settings_handler import add_widget_to_settings
 from data_module import sd
 
 
@@ -185,7 +185,7 @@ def prepare_algo_black_list():
                                 tooltip='Toggle algo',
                                 icon='check' # (FontAwesome names without the `fa-` prefix)
                             )
-        add(new_toggle_button, algo)
+        add_widget_to_settings(new_toggle_button, algo)
         new_toggle_button.observe(on_button_toggle_alg_bl, names='value')
         black_list_buttons.append(new_toggle_button)
     # adds the buttons to the HBox so they shopup horizontally
@@ -205,7 +205,7 @@ def prepare_dataset_black_list():
                                 icon='check' # (FontAwesome names without the `fa-` prefix)
                             )
         new_toggle_button.observe(on_button_toggle_ds_bl, names='value')
-        add(new_toggle_button, dataset)
+        add_widget_to_settings(new_toggle_button, dataset)
         black_list_buttons.append(new_toggle_button)
     # adds the buttons to the HBox so they shopup horizontally
     hbox = widgets.HBox(black_list_buttons)
@@ -216,14 +216,14 @@ def prepare_sort_buttons():
     button_AP.on_click(sort_button_on_click)
     button_FPRat95 = widgets.Button(description="Sort by FPRat95")
     button_FPRat95.on_click(sort_button_on_click)
-    add(button_AP,'button_AP', widget= True, description= True)
-    add(button_FPRat95,'button_FPRat95', widget= True, description= True)
+    add_widget_to_settings(button_AP, 'button_AP', description= True)
+    add_widget_to_settings(button_FPRat95, 'button_FPRat95', description= True)
     return button_AP, button_FPRat95
 def prepare_highlight_button():
     highlight_button = widgets.ToggleButton(description="Highlight",
                                             button_style= "success")
     highlight_button.observe(toggle_highlight, names='value')
-    add(highlight_button, 'highlight_button')
+    add_widget_to_settings(highlight_button, 'highlight_button')
     return highlight_button
 # Styling function
 def style_dataframe(df, aply_highlight, column_width=60, border_style='solid', border_width='2px', border_color='black'):

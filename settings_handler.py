@@ -3,20 +3,21 @@ from os import listdir,makedirs
 from os.path import isfile, join, exists
 import ipywidgets as widgets
 from IPython.display import display
+from types import SimpleNamespace
 # Dictionary for all widgets which values are going to be tracked
 widgets_tracked = {}
 descriptions_tracked = {}
 # Dictionary for all variables that are going to be tracked
 # Most of the times values that are associated with buttons but can not be accessed through the button
-dicts_tracked = {}
+vars_tracked = {}
 # Default settings folder
 settings_folder = 'settings/'
 # Name of file in which the upcoming save of settings will be written
 will_save_file_name = 'unnamed_preset'
 will_load_file_name = None
 # Adds widget to the list of widgets which are going to be stored
-def add_dict_to_settings(new_dict, name):
-    dicts_tracked[name] = new_dict
+def add_var_to_settings(new_var, name):
+    vars_tracked[name] = new_var
 def add_widget_to_settings(new_object_to_remember, name, description = False):
     if description:
         descriptions_tracked[name] = new_object_to_remember
@@ -35,13 +36,12 @@ def get_description_values():
     return descriptions_dic
 # Called by save button
 def save(*args,**kwargs):
-    print('start save')
     # Dump the list of values to file
     all_values = {}
     widget_values = get_widget_values()
     descriptions = get_description_values()
     all_values['widgets'] = widget_values
-    all_values['dicts'] = dicts_tracked 
+    all_values['vars'] = vars_tracked
     all_values['descriptions'] = descriptions
     with open(settings_folder + will_save_file_name+'.json', 'w') as file:
         json.dump(all_values, file)
@@ -56,17 +56,18 @@ def load_widget_states(loaded_vlaue_dict):
             img_selector_value = loaded_value
         else:
             widgets_tracked[name].value = loaded_value
-    
-    # Confirms newly loaded algos
-    from results_comparer import make_confirmation
-    make_confirmation()
-    # After selecting algos, set the value to newly loaded img selector value
-    # Otherwise would cause crash
-    widgets_tracked['img_selector'].value = img_selector_value
-    for name, loaded_value in loaded_vlaue_dict['dicts'].items():
-        dicts_tracked[name] = loaded_value
+            
+    for name, loaded_value in loaded_vlaue_dict['vars'].items():
+        vars_tracked[name] = loaded_value
     for name, loaded_value in loaded_vlaue_dict['descriptions'].items():
         descriptions_tracked[name].description = loaded_value
+    
+    from results_comparer import make_confirmation
+    # Confirms newly loaded algos
+    # After selecting algos, set the value to newly loaded img selector value
+    # Otherwise would cause crash
+    make_confirmation()
+    widgets_tracked['img_selector'].value = img_selector_value
     
     from sheet import update_sheet
     update_sheet()
