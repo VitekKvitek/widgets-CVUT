@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import ipywidgets as widgets
 from IPython.display import clear_output, display, FileLink
 from settings_handler import add_widget_to_settings
-from data_module import iv
+from data_module import iv, name_mapping
 import tkinter as tk
 from tkinter import filedialog
 
@@ -147,41 +147,13 @@ def get_all_files(folder_path):
 def get_all_folders(directory):
     return [name for name in listdir(directory) if path.isdir(path.join(directory, name))]
 
-def contract(name):
-    match name:
-        case "Fishyscapes_LaF":
-            contraction = 'FS'
-
-        case "RoadAnomaly":
-            contraction = 'RA'
-
-        case "RoadObstacles":
-            contraction = 'RO'
-        
-        case "RoadObstacles21":
-            contraction = 'RO21A'
-        case _:
-            print("Could not find correct contraction name")
-            contraction = None
-    return contraction
-
-def decontract(name):
-    match name:
-        case "FS":
-            long_name = "Fishyscapes_LaF"
-
-        case 'RA':
-            long_name = "RoadAnomaly"
-
-        case 'RO':
-            long_name = "RoadObstacles"
-        
-        case 'RO21A':
-            long_name = "RoadObstacles21"
-        case _:
-            print("Could not find correct long name")
-            long_name = None
-    return long_name
+def convert_name(name):
+    if name in name_mapping:
+        return name_mapping[name]
+    
+    # Otherwise, try to find the name in the reversed mapping (short to long)
+    reverse_mapping = {v: k for k, v in name_mapping.items()}
+    return reverse_mapping.get(name, None)
 
 def get_base_folder(selected_folder):
     # Determine folder path
@@ -194,7 +166,7 @@ def load_gt(selected_file, selected_folder, selected_algo, use_dataset):
         gt_folder_path = os.path.join(get_base_folder(selected_folder), 'gt')
         original_gt_path = os.path.join(gt_folder_path, selected_file)
     else:
-        results_folder = os.path.join('data/export/results/', selected_algo, contract(selected_folder), 'preds')
+        results_folder = os.path.join('data/export/results/', selected_algo, convert_name(selected_folder), 'preds')
         base_filename = os.path.splitext(selected_file)[0]
         original_gt_path = os.path.join(results_folder, f"{base_filename}..png.npy")
 
@@ -271,7 +243,7 @@ def generate_image_text(border_height, border_width, num_channels, row_index):
 def generate_name():
     base_filename = os.path.splitext(iv.selected_file)[0] #strip extension
     # Name: folder-file-algo1-algo2.png
-    unique_name = f"{contract(iv.selected_folder)}-{base_filename}-{iv.selected_algo[0][-15:]}-{iv.selected_algo[1][-15:]}"
+    unique_name = f"{convert_name(iv.selected_folder)}-{base_filename}-{iv.selected_algo[0][-15:]}-{iv.selected_algo[1][-15:]}"
     return unique_name
 
 # Generate all images for one row
@@ -347,7 +319,7 @@ def combine_rows():
 def update_vals(alg0,alg1,folder,dataset):
     iv.selected_algo[0] = alg0
     iv.selected_algo[1] = alg1
-    iv.selected_folder = decontract(folder)
+    iv.selected_folder = convert_name(folder)
     iv.selected_file = dataset
     show_final(3)
 
@@ -379,7 +351,7 @@ def show_final(row_index, fig_size=(24, 12)):
     final_image = combine_rows()
     title = generate_name()
     with output:
-        clear_output(wait=False)
+        clear_output(wait=True)
         plt.figure(figsize=fig_size)
         plt.imshow(final_image)
         plt.axis('off')
@@ -422,8 +394,8 @@ def prepare_save_image():
 save_button = prepare_save_image()
 
 def display_image_settings():
-    display(obstacle_slider0,  
+    display(output,
+            obstacle_slider0,  
             obstacle_slider1, 
-            output,
             save_button)
 
