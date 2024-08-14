@@ -26,7 +26,7 @@ res_data ={'algo_0' : None,
            'difference_type' : 'AP' # By which score will be the 2 algos compared
            }
 rd = SimpleNamespace(**res_data)
-
+add_var_to_settings(rd.difference_type, 'difference_type')
 image_values = {
     'original_image': None,
     'ground_truth': None, 
