@@ -322,11 +322,11 @@ def export_sheet_column_index_to_comparer():
 def initial_display():
     prepare_df()
     hbox_button = widgets.HBox([button_AP, button_FPRat95, highlight_button])
-    display(hbox_button)
     styled_df = style_dataframe(sd.display_df, sd.apply_highlight)
     with out:
         display(HTML(styled_df.to_html()))
     display(out)
+    display(hbox_button)
     display(prepare_algo_black_list())
     display(prepare_dataset_black_list())
     export_sheet_row_index_to_comparer()
