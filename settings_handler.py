@@ -86,17 +86,12 @@ def load_widget_states(loaded_vlaue_dict):
         descriptions_tracked[name].description = loaded_value
     for name, loaded_value in loaded_vlaue_dict['styles'].items():
         styles_tracked[name].button_style = loaded_value
-    from results_comparer import make_confirmation
-    # Confirms newly loaded algos
-    # After selecting algos, set the value to newly loaded img selector value
-    # Otherwise would cause crash
-    make_confirmation()
     orderred_widgets_tracked['img_selector'][0].value = img_selector_value
     
     from sheet import update_sheet
     update_sheet()
-    from results_comparer import select_image
-    select_image()
+    from results_comparer import regenerate
+    regenerate()
 # loads the data from json file and sets the current_loaded_settings
 # Does not change widgets!!!
 def load(*args,**kwargs):
