@@ -6,9 +6,11 @@ from IPython.display import display
 from collections import OrderedDict
 # Dictionary for all widgets which values are going to be tracked
 widgets_tracked = {}
+# Dict in which are store widgets which descroption is going to be tracked
 descriptions_tracked = {}
+# Dict in which are store widgets which style is going to be tracked
 styles_tracked = {}
-# Widgets which are stored in order
+# Widgets which are stored in order - to achive corret loading order
 orderred_widgets_tracked = OrderedDict()
 # Dictionary for all variables that are going to be tracked
 # Most of the times values that are associated with buttons but can not be accessed through the button
@@ -71,32 +73,24 @@ def save(*args,**kwargs):
     uploader_widget.options = get_all_files()
 # Called by load_button - Function to load widget values
 def load_widget_states(loaded_vlaue_dict):
-    # Variable which is used in mechanism for setting img selector value
-    img_selector_value = None
     for name,loaded_value in loaded_vlaue_dict['widgets'].items():
+        if 'slider' in name:
+            # disable
+            pass
         widgets_tracked[name].value = loaded_value
     for name,loaded_value in loaded_vlaue_dict['ordered_widgets'].items():
-        if name == 'img_selector':
-            img_selector_value = loaded_value
-        else:
-            orderred_widgets_tracked[name][0].value = loaded_value 
+        orderred_widgets_tracked[name][0].value = loaded_value 
     for name, loaded_value in loaded_vlaue_dict['vars'].items():
         vars_tracked[name] = loaded_value
     for name, loaded_value in loaded_vlaue_dict['descriptions'].items():
         descriptions_tracked[name].description = loaded_value
     for name, loaded_value in loaded_vlaue_dict['styles'].items():
         styles_tracked[name].button_style = loaded_value
-    from results_comparer import make_confirmation
-    # Confirms newly loaded algos
-    # After selecting algos, set the value to newly loaded img selector value
-    # Otherwise would cause crash
-    make_confirmation()
-    orderred_widgets_tracked['img_selector'][0].value = img_selector_value
     
     from sheet import update_sheet
     update_sheet()
-    from results_comparer import select_image
-    select_image()
+    from results_comparer import regenerate
+    regenerate()
 # loads the data from json file and sets the current_loaded_settings
 # Does not change widgets!!!
 def load(*args,**kwargs):
