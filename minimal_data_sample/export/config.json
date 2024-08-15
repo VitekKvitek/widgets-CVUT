@@ -1,0 +1,24 @@
+{
+    "Datasets": {
+        "RA":{
+            "path": "./datasets/RoadAnomaly",
+            "road_id": 1,
+            "anomaly_id": 0,
+            "void_id": 255,
+        },
+        "FS":{
+            "path": "./datasets/Fishyscapes_LaF",
+            "road_id": 1,
+            "anomaly_id": 0,
+            "void_id": 255,
+        }
+    },
+    "Algorithms": {
+        "algo0":{
+            "name": "Algo0",
+        },
+        "algo1": {
+            "name": "Algo1"
+        }
+    }
+}
