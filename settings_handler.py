@@ -72,6 +72,9 @@ def save(*args,**kwargs):
 # Called by load_button - Function to load widget values
 def load_widget_states(loaded_vlaue_dict):
     for name,loaded_value in loaded_vlaue_dict['widgets'].items():
+        if 'slider' in name:
+            # disable
+            pass
         widgets_tracked[name].value = loaded_value
     for name,loaded_value in loaded_vlaue_dict['ordered_widgets'].items():
         orderred_widgets_tracked[name][0].value = loaded_value 
