@@ -20,6 +20,7 @@ def import_sheet_row_index(index_list):
         algo_selector_0.value = selector_0_value
     if selector_1_value in algo_list:
         algo_selector_1.value = selector_1_value
+
 def import_sheet_col_index(index_list):
     dataset_list = index_list
     folder_selector_value = dataset_selector.value
@@ -27,6 +28,8 @@ def import_sheet_col_index(index_list):
     # System for displaying old selection 
     if folder_selector_value in dataset_list:
         dataset_selector.value = folder_selector_value
+
+
 # Called after alg selection 1
 def select_algo_0(change):
     rd.algo_0 = change['new']
@@ -37,11 +40,14 @@ def select_algo_1(change):
     rd.algo_1 = change['new']
     if rd.algo_0 != None:
         load_data_for_both_algs()
+        
+
 # Compares results and sorts them by biggest difference in selected score type
 def compare_results():
     # Returns if any of the data are None - can not compare only singular data
     if rd.data_0 == None or rd.data_1 == None:
         return
+    
     for dataset_key in rd.data_0.keys():
         dataset_algo_0 = rd.data_0[dataset_key]
         dataset_algo_1 = rd.data_1[dataset_key]
@@ -60,8 +66,11 @@ def compare_results():
         rd.sorted_keys[dataset_key] = dataset_sorted_keys
     # Updates the options of img_selector
     update_img_selector(called_through_algo_selector= True)
+
+
 def set_selected_img(change):
     rd.selected_img = change['new']
+    
 # Sets difference type by which it will be sorted
 def set_difference_type(button):
     new_difference_type = button.description.split()[-1]
@@ -74,13 +83,16 @@ def set_difference_type(button):
     else:
         hbox_button.children[0].button_style = ''
         hbox_button.children[1].button_style = 'info'
+
 def load_data_for_both_algs():
         rd.data_0 = read_per_f_results (rd.algo_0)
         rd.data_1 = read_per_f_results (rd.algo_1)
         compare_results()
+        
 def update_selected_dataset(change):
     rd.selected_img_dataset = change['new']
     update_img_selector()
+
 def update_img_selector(called_through_algo_selector = False):
     if rd.selected_img_dataset == None:
         return
@@ -90,6 +102,7 @@ def update_img_selector(called_through_algo_selector = False):
         img_selector.value = current_img
     else:
         img_selector.options = rd.sorted_keys[rd.selected_img_dataset]
+
 def update_score_labels():
     # Get scores for the current image using the provided function
     algo_0_score, algo_1_score = get_score_for_current_img()
@@ -123,7 +136,8 @@ def update_score_labels():
         margin='0px 40px 0px 80px', 
         padding='5px',
         border='solid 1px black'
-    )   
+    )  
+
 def regenerate(*args,**kwargs):
     if rd.selected_img == None or rd.selected_img_dataset == None or rd.algo_0 == None or rd.algo_1 == None:
         return
@@ -153,6 +167,7 @@ def prepare_algo_selectors():
     algo_selector_1.observe(select_algo_1, names='value')
     add_widget_to_ord_settings(algo_selector_1, 'algo_selector_1', 1)
     return algo_selector_0, algo_selector_1
+
 # Prepares buttons to choose diffrence type by which will be the images sorted
 def prepare_difference_type_buttons():    
     button_AP = widgets.Button(description="Difference by AP")
@@ -165,6 +180,7 @@ def prepare_difference_type_buttons():
     hbox_button = widgets.HBox(button_list)
     add_widget_to_settings(button_FPRat95,'button_FPRat95',style= True )
     return hbox_button
+
 # Prepares dropdown widgets which lists all available images for each dataset
 def prepare_img_selector():
     img_selector = widgets.Dropdown(
@@ -175,6 +191,7 @@ def prepare_img_selector():
     img_selector.observe(set_selected_img, names='value')
     add_widget_to_ord_settings(img_selector, 'img_selector', 3)
     return img_selector
+
 def prepare_dataset_selector():
     dataset_selector = widgets.Dropdown(
         options = [],
@@ -184,15 +201,18 @@ def prepare_dataset_selector():
     dataset_selector.observe(update_selected_dataset, names='value')
     add_widget_to_ord_settings(dataset_selector, 'data_selector', 2)
     return dataset_selector
+
 def prepare_regen_img_button():
     button_select = widgets.Button(description="Regenerate")
     button_select.on_click(regenerate)
     return button_select
+
 def prepare_labels():
     # Create a Label widget
     algo_0_label = widgets.Label(value = " ")
     algo_1_label = widgets.Label(value = " ")
     return algo_0_label, algo_1_label
+
 def display_controls():
     hbox_alg_selector = widgets.HBox([algo_selector_0,
                                   algo_selector_1])
@@ -204,6 +224,8 @@ def display_controls():
             hbox_img_selector,
             hbox_alg_selector,
             hbox_labels)
+    
+
 algo_selector_0, algo_selector_1 = prepare_algo_selectors()
 hbox_button = prepare_difference_type_buttons()
 dataset_selector = prepare_dataset_selector()
