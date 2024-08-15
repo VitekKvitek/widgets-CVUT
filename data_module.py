@@ -37,7 +37,7 @@ image_values = {
     'selected_algo': ['grood_logml_1000K_01adamw_tau10_resetthr1',
                       'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
     'threshold': [0.997, 0.997],
-    'ignore': False
+    'ignore': True
 }
 iv = SimpleNamespace(**image_values)
 

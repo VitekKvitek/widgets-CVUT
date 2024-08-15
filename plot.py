@@ -110,12 +110,10 @@ def draw_differance(original_image, gt, def_gt, thresh):
 
     combined_image = np.zeros((mask1.shape[0], mask1.shape[1], 3), dtype=np.uint8)
 
-
     # Set colors where booleans are different
     combined_image[(mask1 & ~mask2)] = false_positive_color
     combined_image[(~mask1 & mask2)] = false_negative_color
     combined_image[(mask1 & mask2)] = true_positive_color
-
     
     # Create black mask
     black_mask = np.all(combined_image == [0, 0, 0], axis=-1)
@@ -440,7 +438,7 @@ sync_button = prepare_sync_button()
 
 def prepare_ignore_button():
     ignore_button = widgets.Checkbox(    
-        value=True,
+        value=iv.ignore,
         description='Hide ignore region',
         disabled=False,
         indent=False
@@ -456,4 +454,3 @@ def display_image_settings():
             sync_button,
             ignore_button, 
             save_button)
-
