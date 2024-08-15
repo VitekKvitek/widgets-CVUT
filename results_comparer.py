@@ -125,8 +125,7 @@ def update_score_labels():
         border='solid 1px black'
     )   
 def regenerate(*args,**kwargs):
-    # print(rd.selected_img,rd.selected_img_dataset)
-    if rd.selected_img == None or rd.selected_img_dataset == None:
+    if rd.selected_img == None or rd.selected_img_dataset == None or rd.algo_0 == None or rd.algo_1 == None:
         return
     update_vals(rd.algo_0, rd.algo_1, rd.selected_img_dataset, rd.selected_img)
     update_score_labels()
