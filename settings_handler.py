@@ -113,18 +113,21 @@ def get_all_files():
     # List all files in the folder
     all_files = [f for f in listdir(settings_folder) if isfile(join(settings_folder, f))]
     return all_files
+# File upload widget
 def prepare_uploader():
-        # File upload widget
+    all_presets = get_all_files()
     uploader_widget = widgets.Dropdown(
-        options= get_all_files(),
+        options= all_presets,
         description='Choose preset',
         disabled=False,
     )
     # Adds uploader widget to settigns handler - on save it updates the options it can chose from
     uploader_widget.observe(set_load_file_name, names = 'value') # observes change in value of the widget
+    global will_load_file_name
+    will_load_file_name = all_presets[0]
     return uploader_widget
+# Save button widget
 def prepare_save_button():
-    # Create a save button widget
     save_button = widgets.Button(
     description ='Save',
     tooltip ='Click to save data',
@@ -132,6 +135,7 @@ def prepare_save_button():
 )
     save_button.on_click(save)
     return save_button
+# Load button
 def prepare_load_butotn():
     # Create a load button widget
     load_button = widgets.Button(
@@ -141,6 +145,7 @@ def prepare_load_butotn():
 )
     load_button.on_click(load)
     return load_button
+# Text input for naming a preset
 def prepare_file_text():
     # Cretes a text widget in which is written name of file you want to save current settings
     file_text_widget = widgets.Text(
@@ -151,6 +156,7 @@ def prepare_file_text():
 )
     file_text_widget.observe(set_save_file_name, names='value')
     return file_text_widget
+# Display all widgets needed for settign to work
 def display_settings():
     display(uploader_widget,
             load_button,
