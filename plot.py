@@ -97,7 +97,6 @@ def draw_contours(original_image, original_gt, dataset, threshold):
     return contours_image
     
 def draw_differance(original_image, gt, def_gt, thresh):
-    # Mozna ziskat obstacle mask z draw conture/ overlay TODO?
     _, obstacle_mask = create_mask(gt, False, thresh)
     
     mask1 = obstacle_mask
