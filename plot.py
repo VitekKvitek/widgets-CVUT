@@ -10,6 +10,7 @@ from settings_handler import add_widget_to_settings
 from data_module import iv, name_mapping
 import tkinter as tk
 from tkinter import filedialog
+from ipywidgets import HBox, VBox
 
 # Color values
 obstacle_color = [255,0,0]  # Red obstacles
@@ -448,9 +449,6 @@ def prepare_ignore_button():
 ignore_button = prepare_ignore_button()
 
 def display_image_settings():
-    display(output,
-            obstacle_slider0,  
-            obstacle_slider1,
-            sync_button,
-            ignore_button, 
-            save_button)
+    sliders = VBox([obstacle_slider0, obstacle_slider1])
+    buttons = HBox([sync_button, ignore_button, save_button])
+    display(output, HBox([sliders, buttons]))
