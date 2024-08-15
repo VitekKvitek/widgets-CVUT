@@ -75,9 +75,11 @@ def save(*args,**kwargs):
 def load_widget_states(loaded_vlaue_dict):
     for name,loaded_value in loaded_vlaue_dict['widgets'].items():
         if 'slider' in name:
-            # disable
-            pass
-        widgets_tracked[name].value = loaded_value
+            widgets_tracked[name].disabled = True
+            widgets_tracked[name].value = loaded_value
+            widgets_tracked[name]. disabled = False
+        else:
+            widgets_tracked[name].value = loaded_value
     for name,loaded_value in loaded_vlaue_dict['ordered_widgets'].items():
         orderred_widgets_tracked[name][0].value = loaded_value 
     for name, loaded_value in loaded_vlaue_dict['vars'].items():
@@ -124,7 +126,8 @@ def prepare_uploader():
     # Adds uploader widget to settigns handler - on save it updates the options it can chose from
     uploader_widget.observe(set_load_file_name, names = 'value') # observes change in value of the widget
     global will_load_file_name
-    will_load_file_name = all_presets[0]
+    if len(all_presets) > 0:
+        will_load_file_name = all_presets[0]
     return uploader_widget
 # Save button widget
 def prepare_save_button():
