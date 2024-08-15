@@ -374,27 +374,20 @@ def show_final(row_index, fig_size=(24, 12)):
         plt.show()
 
 def update_slider( _ , row_index, slider):
-    if not slider.disabled:
-        if obstacle_slider1.disabled and not obstacle_slider0.disabled:
-            obstacle_slider1.value = obstacle_slider0.value
+    try:
+        if not slider.disabled:
             iv.threshold[0] = obstacle_slider0.value
             iv.threshold[1] = obstacle_slider1.value
-            show_final(3)
-            return
-        else:
-        # Update slider values in the global image values dictionary
-            if row_index == 0:
-                iv.threshold[0] = obstacle_slider0.value
+            
+            if obstacle_slider1.disabled and not obstacle_slider0.disabled:
+                obstacle_slider1.value = obstacle_slider0.value
+                show_final(3)
             else:
-                iv.threshold[1] = obstacle_slider1.value
-
-        # Show the image with the updated slider values
-        try:
-            show_final(row_index)
-        except:
-            pass
+                show_final(row_index)
+    # When using before sliders were initialized
+    except:
+        pass
     
-
 def sync_sliders(checked):
     obstacle_slider1.disabled = checked 
 
