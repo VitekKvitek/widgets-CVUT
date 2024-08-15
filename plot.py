@@ -19,7 +19,7 @@ opacity = 0.6
 
 false_positive_color = [255, 0, 0]   # Red
 false_negative_color = [0, 0, 255]  # Blue
-true_positive = [0, 255, 0]  # Green
+true_positive_color = [0, 255, 0]  # Green
 
 obstacle_cont_color = (0,0,255)  # Blue for obstacle contours
 road_cont_color = (0,255,0)   # Green for road contours
@@ -97,18 +97,24 @@ def draw_contours(original_image, original_gt, dataset, threshold):
     return contours_image
     
 def draw_differance(original_image, gt, def_gt, thresh):
+    
+    
     _, obstacle_mask = create_mask(gt, False, thresh)
     
     mask1 = obstacle_mask
     mask2 = np.any(def_gt == 0, axis=-1)
+
+    if iv.ignore:
+        # Set mask1 to False where def_gt has value 255
+        mask1[np.any(def_gt == 255, axis=-1)] = False
 
     combined_image = np.zeros((mask1.shape[0], mask1.shape[1], 3), dtype=np.uint8)
 
     # Set colors where booleans are different
     combined_image[(mask1 & ~mask2)] = false_positive_color
     combined_image[(~mask1 & mask2)] = false_negative_color
-    combined_image[(mask1 & mask2)] = true_positive
-
+    combined_image[(mask1 & mask2)] = true_positive_color
+    
     # Create black mask
     black_mask = np.all(combined_image == [0, 0, 0], axis=-1)
 
@@ -392,16 +398,21 @@ def update_slider( _ , row_index, slider):
 def sync_sliders(checked):
     obstacle_slider1.disabled = checked 
 
+    
+def toggle_ignore(checked):
+    iv.ignore = checked
+    show_final(3)
+
 
 def prepare_sliders():
     thresh = iv.threshold
 
-    obstacle_slider0 = widgets.FloatSlider(value=thresh[0], min=0.95, max=0.99999, step=0.00001, description='Obstacle Threshold First row', readout_format='.5f', 
+    obstacle_slider0 = widgets.FloatSlider(value=thresh[0], min=0.90, max=0.99999, step=0.00001, description='Obstacle Threshold First row', readout_format='.5f', 
                                            style={'description_width': '300px'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     obstacle_slider0.observe(lambda change: update_slider(change, 0, obstacle_slider0), names='value')
     add_widget_to_settings(obstacle_slider0, 'obstacle_slider0')
 
-    obstacle_slider1 = widgets.FloatSlider(value=thresh[1], min=0.95, max=0.99999, step=0.00001, description='Obstacle Threshold Second row', readout_format='.5f', 
+    obstacle_slider1 = widgets.FloatSlider(value=thresh[1], min=0.90, max=0.99999, step=0.00001, description='Obstacle Threshold Second row', readout_format='.5f', 
                                            style={'description_width': '300px'}, layout=widgets.Layout(width='800px'), continuous_update=False)
     obstacle_slider1.observe(lambda change: update_slider(change, 1, obstacle_slider1), names='value')
     add_widget_to_settings(obstacle_slider1,'obstacle_slider1')
@@ -425,10 +436,21 @@ def prepare_sync_button():
     return sync_button
 sync_button = prepare_sync_button()
 
+def prepare_ignore_button():
+    ignore_button = widgets.Checkbox(    
+        value=iv.ignore,
+        description='Hide ignore region',
+        disabled=False,
+        indent=False
+        )
+    ignore_button.observe(lambda change: toggle_ignore(change['new']), names='value')
+    return ignore_button
+ignore_button = prepare_ignore_button()
+
 def display_image_settings():
     display(output,
             obstacle_slider0,  
             obstacle_slider1,
-            sync_button, 
+            sync_button,
+            ignore_button, 
             save_button)
-
