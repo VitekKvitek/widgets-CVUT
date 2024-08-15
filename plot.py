@@ -240,12 +240,6 @@ def generate_image_text(border_height, border_width, num_channels, row_index):
     
     return white_image
 
-def generate_name():
-    base_filename = os.path.splitext(iv.selected_file)[0] #strip extension
-    # Name: folder-file-algo1-algo2.png
-    unique_name = f"{convert_name(iv.selected_folder)}-{base_filename}-{iv.selected_algo[0][-15:]}-{iv.selected_algo[1][-15:]}"
-    return unique_name
-
 # Generate all images for one row
 def make_row(original_image, mask, use_dataset, thresh, row_index = None, def_gt = None):
     
@@ -279,26 +273,47 @@ def save_image(b):
     root = tk.Tk()
     root.withdraw()  # Hide the root window
 
-    # Open the file dialog to choose the directory
-    initial_dir = os.path.abspath('output')
+    # Define the default 'output' directory
+    default_directory = 'output'
+
+    # Ensure 'output' directory exists, create it if it doesn't
+    if not os.path.exists(default_directory):
+        os.makedirs(default_directory)
+
+    # Open the file dialog to choose the directory, with 'output' as the initial directory
+    initial_dir = os.path.abspath(default_directory)
     directory = filedialog.askdirectory(initialdir=initial_dir, title='Select Folder')
 
+    # If no directory is selected, use the 'output' directory
     if not directory:
         directory = initial_dir
 
-    # Use the 'output' directory if no directory was selected
-    if not os.path.exists(directory):
-        os.makedirs(directory)  
-    
-    unique_name = generate_name()+".png"
-    
-    # Define the filename with the 'output' directory
-    filename = os.path.join(directory, unique_name)
+    # Generate a unique filename
+    unique_name = unique_name = f"{convert_name(iv.selected_folder)}-{iv.selected_file}"
+
+    # Define the filename with the chosen directory
+    #default_path = os.path.join(default_directory, unique_name)
+
+    # Open the save as dialog allowing the user to choose the folder and filename
+    file_path = filedialog.asksaveasfilename(initialdir=default_directory,
+                                             initialfile=unique_name,
+                                             title="Save Image As",
+                                             filetypes=[("PNG files", "*.png")])
+
+    # If the user cancels the save, return early
+    if not file_path:
+        return
+
+    # Ensure the file has a .png extension
+    if not file_path.endswith(".png"):
+        file_path += ".png"
+
+    #Combine rows and save the image in RGB format
     final_rgb = combine_rows()[:, :, [2, 1, 0]]
-    cv.imwrite(filename, final_rgb)
-    
-    with output:
-        display(FileLink(filename))
+    cv.imwrite(file_path, final_rgb)
+
+    # Display a link to the saved file
+    display(FileLink(file_path))
 
 def combine_rows():
     border_height = 100
@@ -348,8 +363,9 @@ output = widgets.Output()
 def show_final(row_index, fig_size=(24, 12)):
     save_rows(row_index)
     
+    filename = os.path.splitext(iv.selected_file)[0]
     final_image = combine_rows()
-    title = generate_name()
+    title = f"Folder: {iv.selected_folder} | File: {filename}" 
     with output:
         clear_output(wait=True)
         plt.figure(figsize=fig_size)
