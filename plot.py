@@ -373,31 +373,43 @@ def show_final(row_index, fig_size=(24, 12)):
         plt.title(title)
         plt.show()
 
-def update_slider( _ , row_index):
-    
-    # Update slider values in the global image values dictionary
-    if row_index == 0:
-        iv.threshold[0] = obstacle_slider0.value
-    else:
-        iv.threshold[1] = obstacle_slider1.value
+def update_slider( _ , row_index, slider):
+    if not slider.disabled:
+        if obstacle_slider1.disabled and not obstacle_slider0.disabled:
+            obstacle_slider1.value = obstacle_slider0.value
+            iv.threshold[0] = obstacle_slider0.value
+            iv.threshold[1] = obstacle_slider1.value
+            show_final(3)
+            return
+        else:
+        # Update slider values in the global image values dictionary
+            if row_index == 0:
+                iv.threshold[0] = obstacle_slider0.value
+            else:
+                iv.threshold[1] = obstacle_slider1.value
 
-    # Show the image with the updated slider values
-    try:
-        show_final(row_index)
-    except:
-        pass
+        # Show the image with the updated slider values
+        try:
+            show_final(row_index)
+        except:
+            pass
+    
+
+def sync_sliders(checked):
+    obstacle_slider1.disabled = checked 
+
 
 def prepare_sliders():
     thresh = iv.threshold
 
     obstacle_slider0 = widgets.FloatSlider(value=thresh[0], min=0.95, max=0.99999, step=0.00001, description='Obstacle Threshold First row', readout_format='.5f', 
-                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
-    obstacle_slider0.observe(lambda change: update_slider(change, 0), names='value')
+                                           style={'description_width': '300px'}, layout=widgets.Layout(width='800px'), continuous_update=False)
+    obstacle_slider0.observe(lambda change: update_slider(change, 0, obstacle_slider0), names='value')
     add_widget_to_settings(obstacle_slider0, 'obstacle_slider0')
 
     obstacle_slider1 = widgets.FloatSlider(value=thresh[1], min=0.95, max=0.99999, step=0.00001, description='Obstacle Threshold Second row', readout_format='.5f', 
-                                           style={'description_width': 'initial'}, layout=widgets.Layout(width='800px'), continuous_update=False)
-    obstacle_slider1.observe(lambda change: update_slider(change, 1), names='value')
+                                           style={'description_width': '300px'}, layout=widgets.Layout(width='800px'), continuous_update=False)
+    obstacle_slider1.observe(lambda change: update_slider(change, 1, obstacle_slider1), names='value')
     add_widget_to_settings(obstacle_slider1,'obstacle_slider1')
     return obstacle_slider0, obstacle_slider1
 obstacle_slider0, obstacle_slider1 = prepare_sliders()
@@ -408,9 +420,21 @@ def prepare_save_image():
     return save_button
 save_button = prepare_save_image()
 
+def prepare_sync_button():
+    sync_button = widgets.Checkbox(    
+        value=False,
+        description='Sync sliders',
+        disabled=False,
+        indent=False
+        )
+    sync_button.observe(lambda change: sync_sliders(change['new']), names='value')
+    return sync_button
+sync_button = prepare_sync_button()
+
 def display_image_settings():
     display(output,
             obstacle_slider0,  
-            obstacle_slider1, 
+            obstacle_slider1,
+            sync_button, 
             save_button)
 
