@@ -6,9 +6,11 @@ from IPython.display import display
 from collections import OrderedDict
 # Dictionary for all widgets which values are going to be tracked
 widgets_tracked = {}
+# Dict in which are store widgets which descroption is going to be tracked
 descriptions_tracked = {}
+# Dict in which are store widgets which style is going to be tracked
 styles_tracked = {}
-# Widgets which are stored in order
+# Widgets which are stored in order - to achive corret loading order
 orderred_widgets_tracked = OrderedDict()
 # Dictionary for all variables that are going to be tracked
 # Most of the times values that are associated with buttons but can not be accessed through the button
