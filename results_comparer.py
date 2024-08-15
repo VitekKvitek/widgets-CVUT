@@ -4,7 +4,7 @@ from IPython.display import display
 # Custom scripts
 from results_loader import read_per_f_results
 from plot import update_vals
-from settings_handler import add_widget_to_ord_settings
+from settings_handler import add_widget_to_ord_settings, add_widget_to_settings
 from data_module import rd
 
 # Function for setting row index list which will be showed in algo selector
@@ -155,10 +155,12 @@ def prepare_difference_type_buttons():
     button_AP = widgets.Button(description="Difference by AP")
     button_AP.on_click(set_difference_type)
     button_AP.button_style = 'info'
+    add_widget_to_settings(button_AP,'button_AP',style= True )
     button_FPRat95 = widgets.Button(description="Difference by FPRat95")
     button_FPRat95.on_click(set_difference_type)
     button_list = [button_AP, button_FPRat95]
     hbox_button = widgets.HBox(button_list)
+    add_widget_to_settings(button_FPRat95,'button_FPRat95',style= True )
     return hbox_button
 # Prepares dropdown widgets which lists all available images for each dataset
 def prepare_img_selector():
@@ -191,8 +193,6 @@ def prepare_labels():
     # Create a Label widget
     algo_1_label = widgets.Label(value = " ")
     algo_2_label = widgets.Label(value = " ")
-    # add(algo_1_label, 'algo_1_label')
-    # add(algo_2_label, 'algo_2_label')
     return algo_1_label, algo_2_label
 def display_controls():
     hbox_alg_selector = widgets.HBox([algo_selector_0,
