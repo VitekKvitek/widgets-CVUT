@@ -375,13 +375,15 @@ def show_final(row_index, fig_size=(24, 12)):
 def update_slider( _ , row_index, slider):
     try:
         if not slider.disabled:
-            iv.threshold[0] = obstacle_slider0.value
-            iv.threshold[1] = obstacle_slider1.value
             
             if obstacle_slider1.disabled and not obstacle_slider0.disabled:
                 obstacle_slider1.value = obstacle_slider0.value
+                iv.threshold[0] = obstacle_slider0.value
+                iv.threshold[1] = obstacle_slider1.value
                 show_final(3)
+
             else:
+                iv.threshold[row_index] = slider.value
                 show_final(row_index)
     # When using before sliders were initialized
     except:
