@@ -28,6 +28,7 @@ def calculate_mean_average():
     # Add the calculated mean as a new column to the original DataFrame
     sd.display_df[('Average', 'AP')] = ap_mean
     sd.display_df[('Average', 'FPRat95')] = fprat95_mean
+
 def sort_by_average(df, called_by_button = False):
     # Determine the column to sort by
     if sd.average_type == 'AP':
@@ -43,17 +44,8 @@ def sort_by_average(df, called_by_button = False):
     # Sort the DataFrame by the selected average column and selected ascending
     sorted_df = df.sort_values(by=average_column, ascending=ascend)
     return sorted_df
-# This function copies the original df and removes all blacklisted rows and columns
-def drop_blackllisted():
-    # Gets original df
-    sd.display_df = sd.df.copy()
-    # Cycle which drops rows
-    for row in sd.bl_row:
-        sd.display_df = sd.display_df.drop(row)
-    # Cycle which drops columns
-    for col in sd.bl_col:
-        sd.display_df = sd.display_df.drop((col,'AP'), axis=1)
-        sd.display_df = sd.display_df.drop((col,'FPRat95'), axis=1)
+
+
 # This function is called after clicking a sort button
 def sort_button_on_click(button):
     # It gets score type from the description of button
@@ -80,6 +72,21 @@ def sort_button_on_click(button):
             button.description = 'desc ' + ' '.join(description)
     sd.display_df = sort_by_average(sd.display_df, called_by_button=True)
     update_sheet()
+    
+
+# This function copies the original df and removes all blacklisted rows and columns
+def drop_blackllisted():
+    # Gets original df
+    sd.display_df = sd.df.copy()
+    # Cycle which drops rows
+    for row in sd.bl_row:
+        sd.display_df = sd.display_df.drop(row)
+    # Cycle which drops columns
+    for col in sd.bl_col:
+        sd.display_df = sd.display_df.drop((col,'AP'), axis=1)
+        sd.display_df = sd.display_df.drop((col,'FPRat95'), axis=1)
+
+
 # Function that is called after toggle algo button clicked
 def on_button_toggle_alg_bl(change):
     # Gets the boolean state from the change dict
@@ -97,6 +104,7 @@ def on_button_toggle_alg_bl(change):
         sd.bl_row.remove(button_description)
     export_sheet_row_index_to_comparer()
     update_sheet()
+
 # Function that is called after toggle dataset button clicked
 def on_button_toggle_ds_bl(change):
     # Gets the boolean state from the change dict
@@ -116,6 +124,7 @@ def on_button_toggle_ds_bl(change):
         sd.bl_col.remove(button_description)
     export_sheet_column_index_to_comparer()
     update_sheet()
+
 def toggle_highlight(change):
     toggled = change['new']
     button = change['owner']
@@ -126,6 +135,8 @@ def toggle_highlight(change):
         button.button_style = 'success'
         sd.apply_highlight = True
     update_sheet()
+
+
 # Functin which updates the showed (displayed) table
 def update_sheet():
     drop_blackllisted()
@@ -135,6 +146,8 @@ def update_sheet():
     with out:
         out.clear_output()
         display(HTML(styled_df.to_html()))
+
+
 # Initial prepare of dataframe
 def prepare_df():
     # create dataframe from dictionary
@@ -172,6 +185,8 @@ def prepare_df():
     sd.df = df.copy()
     sd.display_df = df.copy()
     sd.display_df = sort_by_average(sd.display_df)
+
+
 # Function for preparing toggle buttons (blacklist) for algos
 def prepare_algo_black_list():
     all_algos = indexes
@@ -191,6 +206,7 @@ def prepare_algo_black_list():
     # adds the buttons to the HBox so they shopup horizontally
     hbox = widgets.HBox(black_list_buttons)
     return hbox
+
 # Function for preparing toggle buttons (blacklist) for datasets
 def prepare_dataset_black_list():
     all_datasets = col_names
@@ -210,6 +226,7 @@ def prepare_dataset_black_list():
     # adds the buttons to the HBox so they shopup horizontally
     hbox = widgets.HBox(black_list_buttons)
     return hbox
+
 # Prepares sort button
 def prepare_sort_buttons():
     button_AP = widgets.Button(description="Sort by AP")
@@ -219,12 +236,14 @@ def prepare_sort_buttons():
     add_widget_to_settings(button_AP, 'button_AP', description= True)
     add_widget_to_settings(button_FPRat95, 'button_FPRat95', description= True)
     return button_AP, button_FPRat95
+
 def prepare_highlight_button():
     highlight_button = widgets.ToggleButton(description="Highlight",
                                             button_style= "success")
     highlight_button.observe(toggle_highlight, names='value')
     add_widget_to_settings(highlight_button, 'highlight_button')
     return highlight_button
+
 # Styling function
 def style_dataframe(df, aply_highlight, column_width=60, border_style='solid', border_width='2px', border_color='black'):
     """
@@ -308,16 +327,21 @@ def style_dataframe(df, aply_highlight, column_width=60, border_style='solid', b
     styled_df = styled_df.set_table_styles(styles)
     
     return styled_df
+
+
 def export_sheet_row_index_to_comparer():
     algo_list = sd.df.index
     algo_list = [item for item in algo_list if item not in sd.bl_row]
     results_comparer.import_sheet_row_index(algo_list)
+
 def export_sheet_column_index_to_comparer():
     df_column_list = sd.df.columns.get_level_values(0)
     df_column_list = list(set(df_column_list))
     df_column_list.remove('Average')
     df_column_list = [item for item in df_column_list if item not in sd.bl_col]
     results_comparer.import_sheet_col_index(df_column_list)
+
+
 # Function to display everything
 def initial_display():
     prepare_df()
@@ -331,6 +355,8 @@ def initial_display():
     display(prepare_dataset_black_list())
     export_sheet_row_index_to_comparer()
     export_sheet_column_index_to_comparer()
+
+
 button_AP, button_FPRat95 = prepare_sort_buttons()
 highlight_button = prepare_highlight_button()
 # Out widget that displays sheet (table)
