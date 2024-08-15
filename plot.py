@@ -288,14 +288,11 @@ def save_image(b):
     if not directory:
         directory = initial_dir
 
-    # Generate a unique filename
-    unique_name = unique_name = f"{convert_name(iv.selected_folder)}-{iv.selected_file}"
-
-    # Define the filename with the chosen directory
-    #default_path = os.path.join(default_directory, unique_name)
+    # Generate a unique filename based on folder and file name
+    unique_name = f"{convert_name(iv.selected_folder)}-{iv.selected_file}"
 
     # Open the save as dialog allowing the user to choose the folder and filename
-    file_path = filedialog.asksaveasfilename(initialdir=default_directory,
+    file_path = filedialog.asksaveasfilename(initialdir=directory,  # start in the selected directory
                                              initialfile=unique_name,
                                              title="Save Image As",
                                              filetypes=[("PNG files", "*.png")])
@@ -308,12 +305,14 @@ def save_image(b):
     if not file_path.endswith(".png"):
         file_path += ".png"
 
-    #Combine rows and save the image in RGB format
+    # Combine rows and save the image in RGB format
     final_rgb = combine_rows()[:, :, [2, 1, 0]]
     cv.imwrite(file_path, final_rgb)
 
     # Display a link to the saved file
-    display(FileLink(file_path))
+    relative_path = os.path.relpath(file_path, start=os.getcwd())
+    with output:
+        display(FileLink(relative_path))
 
 def combine_rows():
     border_height = 100
