@@ -12,4 +12,10 @@ To set up and run this project on your local machine, follow the steps below.
 4. ```bash
      pip3 install -r requirements.txt
 ## Importing data
-* replace **data** folder with own data containing **export/** **dataset**, **result**, **config.json** 
+* replace **data** folder with own data containing **export/** **dataset**, **result**, **config.json**
+  
+## How to use
+1. Select algorithm to compare from algo0 and algo1 dropdown menus
+2. Select folder in Dataset dropdown
+3. Chose file from Image dropdown to be displayed
+
