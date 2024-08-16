@@ -3,7 +3,6 @@
 ## Project Setup
 
 To set up and run this project on your local machine, follow the steps below.
-### Cloning the Repository
 1. ```bash
    git clone https://github.com/VitekKvitek/widgets-CVUT
 2. ```bash
