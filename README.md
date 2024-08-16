@@ -11,6 +11,10 @@ To set up and run this project on your local machine, follow the steps below.
      source venv/bin/activate
 4. ```bash
      pip3 install -r requirements.txt
+## runnig the app
+1. ```bash
+   voila main_widget.ipynb
+Then in internet browser go to ``http://localhost:8866/`` 
 ## Importing data
 * replace **data** folder with own data containing **export/** **dataset**, **result**, **config.json**
   
