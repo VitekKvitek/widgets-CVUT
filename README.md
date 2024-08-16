@@ -6,11 +6,11 @@ To set up and run this project on your local machine, follow the steps below.
 1. ```bash
    git clone https://github.com/VitekKvitek/widgets-CVUT
 2. ```bash
-     python3 -m venv venv
+   python3 -m venv venv
 3. ```bash
-     source venv/bin/activate
+   source venv/bin/activate
 4. ```bash
-     pip3 install -r requirements.txt
+   pip3 install -r requirements.txt
 ## Runnig the app
 1. ```bash
    voila main_widget.ipynb
