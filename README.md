@@ -35,6 +35,7 @@ Then in internet browser go to ``http://localhost:8866/``
 
 ## Image Output
 ![dropdown](assets/example_output.png)
-
+## Key technologies used
+This project is built with ipywidgets and it runs in jupyternotebook
 ## Support
 It works on my machine ❤️
