@@ -196,7 +196,7 @@ def load_image(selected_file, selected_folder):
 
 def make_legend(target_h, target_w):
     
-    legend_path = 'legend.png'
+    legend_path = 'assets/legend.png'
     legend_image = np.full((target_h, target_w, 3), 255, dtype=np.uint8)
     legend = cv.imread(legend_path, cv.IMREAD_UNCHANGED)
     
