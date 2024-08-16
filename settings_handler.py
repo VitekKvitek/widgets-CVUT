@@ -4,6 +4,8 @@ from os.path import isfile, join, exists
 import ipywidgets as widgets
 from IPython.display import display
 from collections import OrderedDict
+
+
 # Dictionary for all widgets which values are going to be tracked
 widgets_tracked = {}
 # Dict in which are store widgets which descroption is going to be tracked
@@ -114,8 +116,8 @@ def load(*args,**kwargs):
     with open(settings_folder + will_load_file_name, 'r') as file:
         loaded_vlaue_dict = json.load(file)
     load_widget_states(loaded_vlaue_dict)
-# This function is called by text button - sets name of file to save into
 
+# This function is called by text button - sets name of file to save into
 def set_save_file_name(change):
     global will_save_file_name
     will_save_file_name = change['new']
@@ -126,7 +128,7 @@ def set_load_file_name(change):
     will_load_file_name = change['new']
 
 
-
+# Gets all available presets from settings folder
 def get_all_files():
     # Check if the folder exists, and create it if it doesn't
     if not exists(settings_folder):
