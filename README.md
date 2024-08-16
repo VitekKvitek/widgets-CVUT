@@ -39,5 +39,6 @@ Then in internet browser go to ``http://localhost:8866/``
 This project is built with **ipywidgets** and it runs in **jupyternotebook**
 ## Support
 It works on my machine ❤️
-## Results
-![Anomaly detected](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzR6YnkyZDZwZnRmaHhhYWtqb2Jmd2hzZ2RxaDhibnBkZWxndGxnMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OH2rL6DVTNpte/200.webp)
+## Totally real life scenario
+![Anomaly_not_detected](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzR6YnkyZDZwZnRmaHhhYWtqb2Jmd2hzZ2RxaDhibnBkZWxndGxnMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OH2rL6DVTNpte/200.webp)
+![Anomaly_detected](https://media.giphy.com/media/3o7TKWhdXIAIRgO7kY/giphy.gif?cid=790b76117xb7m6lwel6h6eizdbbvobz8a99jslc02glxf7x7&ep=v1_gifs_search&rid=giphy.gif&ct=g)
