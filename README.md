@@ -1,4 +1,4 @@
-# Interactive interface for visualisation of anomaly detection methods 🚙🐄💥
+# Interactive interface for visualisation of anomaly detection methods 🚙🛣️🐖💥
 
 ## Project Setup
 
