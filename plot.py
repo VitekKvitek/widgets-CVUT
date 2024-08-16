@@ -435,6 +435,7 @@ def prepare_sync_button():
         indent=False
         )
     sync_button.observe(lambda change: sync_sliders(change['new']), names='value')
+    add_widget_to_settings(sync_button, 'sync_button')
     return sync_button
 sync_button = prepare_sync_button()
 
@@ -446,6 +447,7 @@ def prepare_ignore_button():
         indent=False
         )
     ignore_button.observe(lambda change: toggle_ignore(change['new']), names='value')
+    add_widget_to_settings(ignore_button, 'ignore_button')
     return ignore_button
 ignore_button = prepare_ignore_button()
 
