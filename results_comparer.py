@@ -35,6 +35,7 @@ def select_algo_0(change):
     rd.algo_0 = change['new']
     if rd.algo_1 != None:
         load_data_for_both_algs()
+
 # Called after alg selection 2
 def select_algo_1(change):
     rd.algo_1 = change['new']
