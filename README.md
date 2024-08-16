@@ -39,3 +39,5 @@ Then in internet browser go to ``http://localhost:8866/``
 This project is built with **ipywidgets** and it runs in **jupyternotebook**
 ## Support
 It works on my machine ❤️
+## Results
+![Anomaly detected](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExYzR6YnkyZDZwZnRmaHhhYWtqb2Jmd2hzZ2RxaDhibnBkZWxndGxnMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/OH2rL6DVTNpte/200.webp)
