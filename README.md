@@ -9,4 +9,4 @@
 * `voila main_widget.ipynb`
 
 ## Importing data
-* replace data folder with own data containing export/ dataset, result, config.json 
+* replace **data** folder with own data containing **export/** **dataset**, **result**, **config.json** 
