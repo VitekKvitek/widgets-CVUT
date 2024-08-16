@@ -1,6 +1,7 @@
 # In this script data are stored
 from types import SimpleNamespace
 from settings_handler import add_var_to_settings
+import json
 
 sheet_data = {'df': None, # Dataframe with all of the data
               'display_df': None, # Dataframe version which will be displayed - after black list and sorting
@@ -36,14 +37,22 @@ image_values = {
     'selected_folder': 'Fishyscapes_LaF',
     'selected_algo': ['grood_logml_1000K_01adamw_tau10_resetthr1',
                       'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
-    'threshold': [0.997, 0.997],
+    'threshold': [0.97, 0.97],
     'ignore': True
 }
 iv = SimpleNamespace(**image_values)
 
-name_mapping = {
-    "Fishyscapes_LaF": 'FS',
-    "RoadAnomaly": 'RA',
-    "RoadObstacles": 'RO',
-    "RoadObstacles21": 'RO21A'
-}
+# Load the config.json file
+with open('data/export/config.json', 'r') as f:
+    config = json.load(f)
+
+# Initialize the name_mapping dictionary
+name_mapping = {}
+
+# Iterate over the datasets in the config
+for key, value in config['Datasets'].items():
+    # Extract the dataset name from the path
+    full_name = value['path'].split('/')[-1]  # Get the last part of the path
+    # Add to the name_mapping dictionary
+    name_mapping[full_name] = key
+    name_mapping[key] = full_name

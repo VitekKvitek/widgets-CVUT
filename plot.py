@@ -28,12 +28,11 @@ thickness = 3
 
 def create_mask(gt, use_dataset, threshold):
     #road_threshold = 0.4
-    void_mask = None
+    void_mask = (iv.ground_truth == 255)
 
     if(use_dataset):
         #road_mask = (original_gt == 1)
         obstacle_mask = (gt == 0)
-        void_mask = (gt == 255)
     else:
         #road_mask = (original_gt <= road_threshold)  
         obstacle_mask = (gt > threshold) 
@@ -55,12 +54,16 @@ def draw_overlay(opacity, original_image, gt, use_dataset, threshold):
     void_overlay = np.zeros_like(original_image)
     void_overlay[:] = void_color
 
+    
+
     # Apply masks
     if(use_dataset):
         void_clr_mask = void_overlay * void_mask
         obstacle_clr_mask = obstacle_overlay * obstacle_mask
         combined_mask = cv.add(void_clr_mask, obstacle_clr_mask)
     else:
+        if iv.ignore:
+            obstacle_mask[np.any(void_mask == True, axis=-1)] = False
         #road_clr_mask = road_overlay * road_mask [:, :, np.newaxis]  # Add channel dimension
         obstacle_clr_mask = obstacle_overlay * obstacle_mask [:, :, np.newaxis]
         combined_mask = obstacle_clr_mask
@@ -156,10 +159,8 @@ def get_all_folders(directory):
 def convert_name(name):
     if name in name_mapping:
         return name_mapping[name]
-    
-    # Otherwise, try to find the name in the reversed mapping (short to long)
-    reverse_mapping = {v: k for k, v in name_mapping.items()}
-    return reverse_mapping.get(name, None)
+    else:
+        print("Name not found in name_mapping ")
 
 def get_base_folder(selected_folder):
     # Determine folder path
@@ -339,7 +340,7 @@ def combine_rows():
 def update_vals(alg0,alg1,folder,dataset):
     iv.selected_algo[0] = alg0
     iv.selected_algo[1] = alg1
-    iv.selected_folder = convert_name(folder)
+    iv.selected_folder = convert_name(folder) #FA > fish
     iv.selected_file = dataset
     show_final(3)
 
