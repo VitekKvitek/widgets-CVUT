@@ -37,6 +37,19 @@ Then in internet browser go to ``http://localhost:8866/``
 ![dropdown](assets/example_output.png)
 ## Key technologies used
 This project is built with **ipywidgets** and it runs in **jupyternotebook**
+
+## Citation
+If you use this work please cite:
+```latex
+@InProceedings{Widget🚙🛣️🐖💥,
+    author    = {Petřík, Jiří Procházka, Vítězslav and Vojíř, Tomáš},
+    title     = {{Interactive interface for visualisation of anomaly detection methods}},
+    year      = {2024},
+}
+```
+## Support
+It works on my machine ❤️
+
 ## Support
 It works on my machine ❤️
 ## Totally real life scenario
