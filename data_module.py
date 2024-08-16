@@ -33,10 +33,10 @@ image_values = {
     'ground_truth': None, 
     'predict': [None, None],
     'row': [None, None, None],  # [alg1, alg2, default]
-    'selected_file': '01_Hanns_Klemm_Str_45_000002_000190.png', #TODO Initial values for debuging
-    'selected_folder': 'Fishyscapes_LaF',
-    'selected_algo': ['grood_logml_1000K_01adamw_tau10_resetthr1',
-                      'grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1'],
+    'selected_file': None, 
+    'selected_folder': None,
+    'selected_algo': [None,
+                      None],
     'threshold': [0.97, 0.97],
     'ignore': True
 }
