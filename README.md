@@ -30,3 +30,5 @@ Then in internet browser go to ``http://localhost:8866/``
 2. Select folder in Dataset dropdown
 3. Chose file from Image dropdown to be displayed
 
+## Support
+It works on my machine
