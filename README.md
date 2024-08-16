@@ -6,10 +6,12 @@ To set up and run this project on your local machine, follow the steps below.
 1. ```bash
    git clone https://github.com/VitekKvitek/widgets-CVUT
 2. ```bash
-   python3 -m venv venv
+   cd widgets-CVUT
 3. ```bash
-   source venv/bin/activate
+   python3 -m venv venv
 4. ```bash
+   source venv/bin/activate
+5. ```bash
    pip3 install -r requirements.txt
 ## Runnig the app
 1. ```bash
