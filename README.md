@@ -13,7 +13,7 @@ To set up and run this project on your local machine, follow the steps below.
    source venv/bin/activate
 5. ```bash
    pip3 install -r requirements.txt
-## Runnig the app
+## Running the app
 Go to the directory in which you stored the project and use theese commands
 1. ```bash
    source venv/bin/activate
@@ -26,9 +26,15 @@ Then in internet browser go to ``http://localhost:8866/``
 * replace **data** folder with own data containing **export/** **dataset**, **result**, **config.json**
   
 ## How to use
-1. Select algorithm to compare from algo0 and algo1 dropdown menus
-2. Select folder in Dataset dropdown
-3. Chose file from Image dropdown to be displayed
+1. Select algorithm to compare from **Algo0** and **Algo1** dropdown menus
+2. Select folder in **Dataset** dropdown
+3. Chose file from **Image** dropdown to be displayed
+4. Press **Regenerate** for change to be displayed
+
+![dropdown](assets/dropdowns.jpg)
+
+## Image Output
+![dropdown](assets/example_output.png)
 
 ## Support
 It works on my machine ❤️
