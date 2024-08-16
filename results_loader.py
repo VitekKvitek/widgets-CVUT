@@ -2,16 +2,19 @@
 import os
 import json
 
-
+# Hardcoded
 initial_folder = 'data/export/results'
 algo_json_general_path = 'res/res.json'
 per_f_json_general_path = 'res/per_frame_res.json'
+
+
 def read_json(file_path):
     with open(file_path, 'r') as f:
         data = json.load(f)
         value_AP = data['AP']
         value_FPRat95 = data['FPRat95']
         return value_AP, value_FPRat95
+
 def read_per_f_json(file_path):
     with open(file_path, 'r') as f:
         data = json.load(f)
@@ -23,6 +26,7 @@ def read_per_f_json(file_path):
             "FPRat95": metrics["FPRat95"]
         }
     return extracted_data
+
 # This function serves for loading results from data folder
 def read_all_algo_jsons():
     algo_list = []
@@ -44,6 +48,7 @@ def read_all_algo_jsons():
             solo_score_list.append(value_FPRat95)
         all_score_list.append(solo_score_list)
     return algo_list, dataset_list, all_score_list
+
 def read_per_f_results(algo):
     all_datasets_per_f_res = {}
     a_folder_path = os.path.join(initial_folder, algo)
@@ -53,5 +58,3 @@ def read_per_f_results(algo):
         results = read_per_f_json(per_f_json_path)
         all_datasets_per_f_res[dataset_f] = results
     return all_datasets_per_f_res
-
-#read_per_f_results('grood_knn_e2e_cityscapes_500k_fl003_condensv5_randomcrop1344_hflip_nptest_lr0025wd54_ipdf0_ioodpdf0uni1_staticood1')
