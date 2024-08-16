@@ -1,4 +1,4 @@
-# Interactive widgets for data visualisation
+# Interactive interface for visualisation of anomaly detection methods 🚙🐄💥
 
 ## Project Setup
 
