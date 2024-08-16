@@ -340,7 +340,7 @@ def combine_rows():
 def update_vals(alg0,alg1,folder,dataset):
     iv.selected_algo[0] = alg0
     iv.selected_algo[1] = alg1
-    iv.selected_folder = convert_name(folder) #FA > fish
+    iv.selected_folder = convert_name(folder)
     iv.selected_file = dataset
     show_final(3)
 

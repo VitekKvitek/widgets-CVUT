@@ -5,7 +5,7 @@
 # folder for storing settings presets
 settings/
 # folder for storing data
-data/
+big_data/
 # folder for image output 
 output/
 
