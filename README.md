@@ -45,7 +45,7 @@ If you use this work please cite:
     year      = {2024},
 }
 ```
-## Support
+## Technical Support
 It works on my machine ❤️
 
 ## Totally real life scenario
