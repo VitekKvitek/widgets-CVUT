@@ -14,7 +14,12 @@ To set up and run this project on your local machine, follow the steps below.
 5. ```bash
    pip3 install -r requirements.txt
 ## Runnig the app
+Go to the directory in which you stored the project and use theese commands
 1. ```bash
+   source venv/bin/activate
+2. ```bash
+   pip3 install -r requirements.txt
+3. ```bash
    voila main_widget.ipynb
 Then in internet browser go to ``http://localhost:8866/`` 
 ## Importing data
@@ -25,3 +30,5 @@ Then in internet browser go to ``http://localhost:8866/``
 2. Select folder in Dataset dropdown
 3. Chose file from Image dropdown to be displayed
 
+## Support
+It works on my machine
