@@ -39,10 +39,11 @@ This project is built with **ipywidgets** and it runs in **jupyternotebook**
 ## Citation
 If you use this work please cite:
 ```latex
-@InProceedings{Widget🚙🛣️🐖💥,
+@misc{Widget🚙🛣️🐖💥,
     author    = {Petřík, Jiří and Procházka, Vítězslav and Vojíř, Tomáš},
     title     = {{Interactive interface for visualisation of anomaly detection methods}},
     year      = {2024},
+    url       = {https://github.com/VitekKvitek/widgets-CVUT},
 }
 ```
 ## Technical Support
